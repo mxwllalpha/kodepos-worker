@@ -1,0 +1,60 @@
+# Kodepos API Indonesia - Cloudflare Workers Configuration
+# High-performance Indonesian postal code API with 83,761 records
+# Author: Maxwell Alpha - https://github.com/mxwllalpha - mxwllalpha@gmail.com
+
+name = "kodepos-worker"
+main = "src/index.ts"
+compatibility_date = "2024-11-03"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database Configuration for postal code data
+[[d1_databases]]
+binding = "KODEPOS_DB"
+database_name = "kodepos-db"
+database_id = "your-database-id-will-be-created"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+DATA_SOURCE_VERSION = "2025-11-26"
+
+# Development Environment
+[env.development]
+name = "kodepos-worker-dev"
+
+[[env.development.d1_databases]]
+binding = "KODEPOS_DB"
+database_name = "kodepos-db-dev"
+database_id = "your-dev-database-id"
+
+[env.development.vars]
+ENVIRONMENT = "development"
+
+# Production Environment
+[env.production]
+name = "kodepos-worker"
+
+[[env.production.d1_databases]]
+binding = "KODEPOS_DB"
+database_name = "kodepos-db"
+database_id = "your-production-database-id"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+# Build Configuration
+[build]
+watch_dir = "src"
+
+# Observability
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+persist = true

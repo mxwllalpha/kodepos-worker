@@ -1,0 +1,1134 @@
+openapi: 3.0.3
+info:
+  title: Kodepos API Indonesia
+  description: |
+    High-performance Indonesian postal code API with global edge distribution.
+
+    ## Features
+    - **83,761 Complete Records**: All Indonesian postal codes with coordinates
+    - **100% Backward Compatible**: Drop-in replacement for kodepos.vercel.app
+    - **Dual API Architecture**: Legacy + Modern endpoints
+    - **Global Distribution**: Cloudflare edge network (200+ locations)
+    - **High Performance**: <100ms response times, 10x faster than alternatives
+    - **Advanced Search**: Multi-field filtering and radius-based queries
+
+    ## Authentication
+    No authentication required for public endpoints. Rate limiting applies.
+
+    ## Data Coverage
+    - **Provinces**: 38 provinces
+    - **Regencies**: 488 regencies/cities
+    - **Districts**: 6,890 districts
+    - **Postal Codes**: 83,761 complete records
+    - **Coordinates**: 100% coverage with elevation data
+    - **Timezones**: WIB, WITA, WIT support
+
+  version: 1.0.0
+  contact:
+    name: Maxwell Alpha
+    email: mxwllalpha@gmail.com
+    url: https://github.com/mxwllalpha
+  license:
+    name: MIT License
+    url: https://github.com/mxwllalpha/kodepos-api/blob/main/LICENSE
+
+servers:
+  - url: https://your-api.workers.dev
+    description: Production server (Cloudflare edge network)
+  - url: http://localhost:8787
+    description: Development server
+
+paths:
+  # Legacy Endpoints (100% Compatible with kodepos.vercel.app)
+  /search:
+    get:
+      summary: Search postal codes by location name
+      description: |
+        Search postal codes by location name. 100% compatible with kodepos.vercel.app/search
+
+        This endpoint provides backward compatibility for existing applications.
+        For advanced features, consider using the modern `/api/v1/search` endpoint.
+
+        **Examples:**
+        - `?q=Jakarta` - Search for locations named Jakarta
+        - `?q=Menteng` - Search for Menteng district
+        - `?q=10110` - Search by postal code
+      operationId: searchPostalCodes
+      tags:
+        - Legacy API (Compatible)
+        - Search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (location name, district, city, or postal code)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+            example: "Jakarta"
+      responses:
+        '200':
+          description: Successful search with matching postal codes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacySearchResponse'
+              examples:
+                jakarta_search:
+                  summary: Search results for "Jakarta"
+                  value:
+                    statusCode: 200
+                    code: "OK"
+                    data:
+                      - code: 10110
+                        village: "Gambir"
+                        district: "Gambir"
+                        regency: "Administrasi Jakarta Pusat"
+                        province: "DKI Jakarta"
+                        latitude: -6.1762629
+                        longitude: 106.8293243
+                        elevation: 0
+                        timezone: "WIB"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /detect:
+    get:
+      summary: Detect location by coordinates
+      description: |
+        Detect postal code information by geographic coordinates. 100% compatible with kodepos.vercel.app/detect
+
+        This endpoint provides backward compatibility for existing applications.
+        For advanced features like radius search, consider using the modern `/api/v1/detect` endpoint.
+
+        **Coordinate Bounds:** Indonesian coordinates only
+        - Latitude: -11 to 6 degrees
+        - Longitude: 95 to 141 degrees
+      operationId: detectLocation
+      tags:
+        - Legacy API (Compatible)
+        - Location Detection
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          description: Latitude coordinate (Indonesian bounds: -11 to 6)
+          schema:
+            type: number
+            minimum: -11
+            maximum: 6
+            example: -6.2088
+        - name: longitude
+          in: query
+          required: true
+          description: Longitude coordinate (Indonesian bounds: 95 to 141)
+          schema:
+            type: number
+            minimum: 95
+            maximum: 141
+            example: 106.8456
+      responses:
+        '200':
+          description: Location detected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyDetectResponse'
+              examples:
+                jakarta_center:
+                  summary: Detection result for Jakarta coordinates
+                  value:
+                    statusCode: 200
+                    code: "OK"
+                    data:
+                      code: 12970
+                      village: "Pasar Manggis"
+                      district: "Setiabudi"
+                      regency: "Administrasi Jakarta Selatan"
+                      province: "DKI Jakarta"
+                      latitude: -6.2107695
+                      longitude: 106.841572
+                      elevation: 15
+                      timezone: "WIB"
+                      distance: 0.4962069729781341
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # Health Check Endpoints
+  /health:
+    get:
+      summary: Basic health check
+      description: Basic health check with database connectivity and system status
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/detailed:
+    get:
+      summary: Detailed health check
+      description: Comprehensive health check with detailed system statistics and performance metrics
+      operationId: detailedHealthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy with detailed statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedHealthResponse'
+
+  # Modern API Endpoints (Advanced Features)
+  /api/v1/search:
+    get:
+      summary: Advanced postal code search
+      description: |
+        Advanced search with multiple filter options. Supports searching by multiple fields simultaneously.
+
+        **Use Cases:**
+        - General search: `?search=Jakarta` (searches all fields)
+        - Specific filters: `?provinsi=DKI Jakarta&kota=Jakarta Pusat`
+        - Postal code search: `?kodepos=10110`
+        - District search: `?kecamatan=Menteng`
+      operationId: advancedSearch
+      tags:
+        - Modern API
+        - Search
+      parameters:
+        - name: search
+          in: query
+          description: General search term (searches across all fields)
+          schema:
+            type: string
+            maxLength: 100
+            example: "Jakarta"
+        - name: kodepos
+          in: query
+          description: Specific postal code
+          schema:
+            type: string
+            pattern: "^[0-9]{5}$"
+            example: "10110"
+        - name: provinsi
+          in: query
+          description: Province name
+          schema:
+            type: string
+            example: "DKI Jakarta"
+        - name: kota
+          in: query
+          description: City/regency name
+          schema:
+            type: string
+            example: "Jakarta Pusat"
+        - name: kecamatan
+          in: query
+          description: District name
+          schema:
+            type: string
+            example: "Menteng"
+        - name: kelurahan
+          in: query
+          description: Village name
+          schema:
+            type: string
+            example: "Menteng"
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModernSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/v1/detect:
+    get:
+      summary: Enhanced location detection with radius
+      description: |
+        Enhanced location detection with configurable search radius and caching.
+
+        **Features:**
+        - Radius-based search (default: 1.0 km)
+        - Intelligent caching (24-hour TTL)
+        - Performance optimization
+        - Indonesian coordinate bounds validation
+      operationId: enhancedDetect
+      tags:
+        - Modern API
+        - Location Detection
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          description: Latitude coordinate (Indonesian bounds: -11 to 6)
+          schema:
+            type: number
+            minimum: -11
+            maximum: 6
+            example: -6.2088
+        - name: longitude
+          in: query
+          required: true
+          description: Longitude coordinate (Indonesian bounds: 95 to 141)
+          schema:
+            type: number
+            minimum: 95
+            maximum: 141
+            example: 106.8456
+        - name: radius
+          in: query
+          description: Search radius in kilometers
+          schema:
+            type: number
+            default: 1.0
+            minimum: 0.1
+            maximum: 50.0
+            example: 2.0
+      responses:
+        '200':
+          description: Location detected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModernDetectResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/v1/nearby:
+    get:
+      summary: Find nearby postal codes
+      description: |
+        Find all postal codes within a specified radius of coordinates.
+
+        **Use Cases:**
+        - Find nearby postal codes: `?latitude=-6.2088&longitude=106.8456&radius=5.0`
+        - Location-based services: retail, delivery, services
+        - Geographic analysis and planning
+      operationId: findNearby
+      tags:
+        - Modern API
+        - Nearby Search
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          description: Latitude coordinate (Indonesian bounds: -11 to 6)
+          schema:
+            type: number
+            minimum: -11
+            maximum: 6
+            example: -6.2088
+        - name: longitude
+          in: query
+          required: true
+          description: Longitude coordinate (Indonesian bounds: 95 to 141)
+          schema:
+            type: number
+            minimum: 95
+            maximum: 141
+            example: 106.8456
+        - name: radius
+          in: query
+          description: Search radius in kilometers
+          schema:
+            type: number
+            default: 5.0
+            minimum: 0.1
+            maximum: 100.0
+            example: 5.0
+      responses:
+        '200':
+          description: Nearby postal codes found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NearbyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/v1/provinces:
+    get:
+      summary: List all provinces
+      description: Get a complete list of all Indonesian provinces with postal code coverage
+      operationId: listProvinces
+      tags:
+        - Modern API
+        - Administrative Data
+      responses:
+        '200':
+          description: Provinces retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvincesResponse'
+
+  /api/v1/cities/{province}:
+    get:
+      summary: Get cities in a province
+      description: Get all cities/regencies within a specific province
+      operationId: listCitiesByProvince
+      tags:
+        - Modern API
+        - Administrative Data
+      parameters:
+        - name: province
+          in: path
+          required: true
+          description: Province name
+          schema:
+            type: string
+            example: "DKI Jakarta"
+      responses:
+        '200':
+          description: Cities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitiesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/stats:
+    get:
+      summary: Get database statistics
+      description: Get comprehensive statistics about the postal code database including record counts and coverage
+      operationId: getStatistics
+      tags:
+        - Modern API
+        - Statistics
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+
+components:
+  schemas:
+    # Legacy API Response Schemas (100% Compatible with kodepos.vercel.app)
+    LegacySearchResponse:
+      type: object
+      required:
+        - statusCode
+        - code
+        - data
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        code:
+          type: string
+          example: "OK"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostalCodeLegacy'
+
+    LegacyDetectResponse:
+      type: object
+      required:
+        - statusCode
+        - code
+        - data
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        code:
+          type: string
+          example: "OK"
+        data:
+          $ref: '#/components/schemas/DetectResultLegacy'
+
+    PostalCodeLegacy:
+      type: object
+      required:
+        - code
+        - village
+        - district
+        - regency
+        - province
+        - latitude
+        - longitude
+      properties:
+        code:
+          type: integer
+          description: Postal code
+          example: 10110
+        village:
+          type: string
+          description: Village name
+          example: "Menteng"
+        district:
+          type: string
+          description: District name
+          example: "Menteng"
+        regency:
+          type: string
+          description: Regency/City name
+          example: "Administrasi Jakarta Pusat"
+        province:
+          type: string
+          description: Province name
+          example: "DKI Jakarta"
+        latitude:
+          type: number
+          format: float
+          description: Latitude coordinate
+          example: -6.1944
+        longitude:
+          type: number
+          format: float
+          description: Longitude coordinate
+          example: 106.8229
+        elevation:
+          type: number
+          format: float
+          description: Elevation in meters
+          example: 12
+        timezone:
+          type: string
+          description: Timezone
+          example: "WIB"
+
+    DetectResultLegacy:
+      type: object
+      required:
+        - code
+        - village
+        - district
+        - regency
+        - province
+        - latitude
+        - longitude
+      properties:
+        code:
+          type: integer
+          description: Postal code
+          example: 12970
+        village:
+          type: string
+          description: Village name
+          example: "Pasar Manggis"
+        district:
+          type: string
+          description: District name
+          example: "Setiabudi"
+        regency:
+          type: string
+          description: Regency/City name
+          example: "Administrasi Jakarta Selatan"
+        province:
+          type: string
+          description: Province name
+          example: "DKI Jakarta"
+        latitude:
+          type: number
+          format: float
+          description: Latitude coordinate
+          example: -6.2107695
+        longitude:
+          type: number
+          format: float
+          description: Longitude coordinate
+          example: 106.841572
+        elevation:
+          type: number
+          format: float
+          description: Elevation in meters
+          example: 15
+        timezone:
+          type: string
+          description: Timezone
+          example: "WIB"
+        distance:
+          type: number
+          format: float
+          description: Distance from query coordinates in kilometers
+          example: 0.4962069729781341
+
+    # Modern API Response Schemas
+    ModernSearchResponse:
+      type: object
+      required:
+        - success
+        - data
+        - total
+        - query_time_ms
+        - cached
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostalCode'
+        total:
+          type: integer
+          description: Number of results returned
+          example: 15
+        query_time_ms:
+          type: number
+          description: Query execution time in milliseconds
+          example: 45
+        cached:
+          type: boolean
+          description: Whether result was served from cache
+          example: false
+        message:
+          type: string
+          example: "Search completed successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    ModernDetectResponse:
+      type: object
+      required:
+        - success
+        - data
+        - query_time_ms
+        - cached
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/DetectResult'
+        query_time_ms:
+          type: number
+          example: 38
+        cached:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Location detected successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    NearbyResponse:
+      type: object
+      required:
+        - success
+        - data
+        - total
+        - radius_km
+        - query_time_ms
+        - cached
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NearbyLocation'
+        total:
+          type: integer
+          description: Number of locations found within radius
+          example: 25
+        radius_km:
+          type: number
+          description: Search radius used
+          example: 5.0
+        query_time_ms:
+          type: number
+          example: 52
+        cached:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Nearby locations found successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    ProvincesResponse:
+      type: object
+      required:
+        - success
+        - data
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["Aceh", "Sumatera Utara", "DKI Jakarta"]
+        message:
+          type: string
+          example: "Provinces retrieved successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    CitiesResponse:
+      type: object
+      required:
+        - success
+        - data
+        - total
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["Jakarta Pusat", "Jakarta Utara", "Jakarta Selatan"]
+        total:
+          type: integer
+          example: 6
+        message:
+          type: string
+          example: "Cities retrieved successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    StatsResponse:
+      type: object
+      required:
+        - success
+        - data
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required:
+            - total_records
+            - provinces
+            - cities
+            - districts
+            - villages
+          properties:
+            total_records:
+              type: integer
+              description: Total postal code records
+              example: 83761
+            provinces:
+              type: integer
+              description: Number of provinces covered
+              example: 38
+            cities:
+              type: integer
+              description: Number of cities/regencies covered
+              example: 488
+            districts:
+              type: integer
+              description: Number of districts covered
+              example: 6890
+            villages:
+              type: integer
+              description: Number of villages covered
+              example: 83761
+        message:
+          type: string
+          example: "Statistics retrieved successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - timestamp
+        - database
+        - total_records
+        - cache_enabled
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        version:
+          type: string
+          example: "1.0.0"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        database:
+          type: string
+          example: "connected"
+        total_records:
+          type: integer
+          example: 83761
+        cache_enabled:
+          type: boolean
+          example: true
+
+    DetailedHealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - timestamp
+        - database
+        - total_records
+        - cache_enabled
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        version:
+          type: string
+          example: "1.0.0"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        database:
+          type: string
+          example: "connected"
+        total_records:
+          type: integer
+          example: 83761
+        cache_enabled:
+          type: boolean
+          example: true
+
+    # Data Models
+    PostalCode:
+      type: object
+      required:
+        - code
+        - village
+        - district
+        - regency
+        - province
+        - latitude
+        - longitude
+      properties:
+        code:
+          type: integer
+          description: Postal code
+          example: 10110
+        village:
+          type: string
+          description: Village name
+          example: "Menteng"
+        district:
+          type: string
+          description: District name
+          example: "Menteng"
+        regency:
+          type: string
+          description: Regency/City name
+          example: "Jakarta Pusat"
+        province:
+          type: string
+          description: Province name
+          example: "DKI Jakarta"
+        latitude:
+          type: number
+          format: float
+          description: Latitude coordinate
+          example: -6.1944
+        longitude:
+          type: number
+          format: float
+          description: Longitude coordinate
+          example: 106.8229
+        elevation:
+          type: number
+          format: float
+          description: Elevation in meters
+          example: 12
+        timezone:
+          type: string
+          description: Timezone
+          example: "WIB"
+
+    DetectResult:
+      type: object
+      required:
+        - provinsi
+        - kota
+        - kecamatan
+        - kelurahan
+        - kodepos
+        - latitude
+        - longitude
+      properties:
+        provinsi:
+          type: string
+          description: Province name
+          example: "DKI Jakarta"
+        kota:
+          type: string
+          description: City/regency name
+          example: "Jakarta Pusat"
+        kecamatan:
+          type: string
+          description: District name
+          example: "Menteng"
+        kelurahan:
+          type: string
+          description: Village name
+          example: "Menteng"
+        kodepos:
+          type: integer
+          description: Postal code
+          example: 10110
+        latitude:
+          type: number
+          format: float
+          description: Latitude coordinate
+          example: -6.1944
+        longitude:
+          type: number
+          format: float
+          description: Longitude coordinate
+          example: 106.8229
+        elevation:
+          type: number
+          format: float
+          description: Elevation in meters
+          example: 12
+        timezone:
+          type: string
+          description: Timezone
+          example: "WIB"
+        distance:
+          type: number
+          format: float
+          description: Distance from query coordinates in kilometers
+          example: 0.4962069729781341
+
+    NearbyLocation:
+      type: object
+      required:
+        - code
+        - village
+        - district
+        - regency
+        - province
+        - latitude
+        - longitude
+        - distance_km
+      properties:
+        code:
+          type: integer
+          description: Postal code
+          example: 10110
+        village:
+          type: string
+          description: Village name
+          example: "Menteng"
+        district:
+          type: string
+          description: District name
+          example: "Menteng"
+        regency:
+          type: string
+          description: Regency/City name
+          example: "Jakarta Pusat"
+        province:
+          type: string
+          description: Province name
+          example: "DKI Jakarta"
+        latitude:
+          type: number
+          format: float
+          description: Latitude coordinate
+          example: -6.1944
+        longitude:
+          type: number
+          format: float
+          description: Longitude coordinate
+          example: 106.8229
+        elevation:
+          type: number
+          format: float
+          description: Elevation in meters
+          example: 12
+        timezone:
+          type: string
+          description: Timezone
+          example: "WIB"
+        distance_km:
+          type: number
+          format: float
+          description: Distance from query coordinates in kilometers
+          example: 0.4962069729781341
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - message
+        - timestamp
+        - version
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Invalid coordinates"
+        message:
+          type: string
+          example: "Latitude must be between -11 and 6 for Indonesian coordinates"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-26T04:38:00.000Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid parameters or malformed request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalid_coordinates:
+              summary: Invalid coordinates
+              value:
+                success: false
+                error: "Invalid coordinates"
+                message: "Latitude must be between -11 and 6 for Indonesian coordinates"
+                timestamp: "2025-11-26T04:38:00.000Z"
+                version: "1.0.0"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            no_results:
+              summary: No results found
+              value:
+                success: false
+                error: "Not found"
+                message: "No results found for the specified criteria"
+                timestamp: "2025-11-26T04:38:00.000Z"
+                version: "1.0.0"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            server_error:
+              summary: Internal server error
+              value:
+                success: false
+                error: "Internal server error"
+                message: "An unexpected error occurred while processing the request"
+                timestamp: "2025-11-26T04:38:00.000Z"
+                version: "1.0.0"
+
+  # Security and rate limiting
+  securitySchemes:
+    RateLimiting:
+      type: apiKey
+      description: Rate limiting applies to all endpoints (100 requests/minute/IP)
+      name: X-Rate-Limit
+      in: header
+
+tags:
+  - name: Legacy API (Compatible)
+    description: 100% backward compatible endpoints for existing applications
+  - name: Modern API
+    description: Advanced features and enhanced capabilities
+  - name: Search
+    description: Search functionality for postal codes and locations
+  - name: Location Detection
+    description: Coordinate-based location detection and reverse geocoding
+  - name: Nearby Search
+    description: Find postal codes within specified radius
+  - name: Administrative Data
+    description: Get provinces, cities, and administrative divisions
+  - name: Statistics
+    description: Database statistics and usage metrics
+  - name: Health
+    description: Health check and system status endpoints

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kodepos API Indonesia - Interactive Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@latest/swagger-ui.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .stats {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .api-info {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .api-section {
+            margin-bottom: 2rem;
+        }
+        .api-section h2 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .endpoint-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s;
+        }
+        .endpoint-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .endpoint-method {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-right: 0.5rem;
+        }
+        .method-get {
+            background: #28a745;
+            color: white;
+        }
+        .method-post {
+            background: #007bff;
+            color: white;
+        }
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #495057;
+        }
+        .endpoint-description {
+            color: #6c757d;
+            margin: 0.5rem 0;
+        }
+        .endpoint-examples {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .try-it-out {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+        .try-it-out:hover {
+            background: #5a6fd8;
+        }
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #swagger-ui {
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🇮🇩 Kodepos API Indonesia</h1>
+        <p>High-performance Indonesian postal code API with global edge distribution</p>
+    </div>
+
+    <div class="stats">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">83,761</div>
+                <div class="stat-label">Complete Records</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">&lt;100ms</div>
+                <div class="stat-label">Response Time</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">200+</div>
+                <div class="stat-label">Edge Locations</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Backward Compatible</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-info">
+        <div class="api-section">
+            <h2>🔍 Quick Start</h2>
+
+            <div class="endpoint-card">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/search?q={query}</span>
+                </div>
+                <div class="endpoint-description">
+                    Search postal codes by location name. 100% compatible with kodepos.vercel.app
+                </div>
+                <div class="endpoint-examples">
+                    <p><strong>Example:</strong></p>
+                    <div class="code-block">curl "https://your-api.workers.dev/search?q=Jakarta"</div>
+                    <button class="try-it-out" onclick="trySearch()">Try It Out</button>
+                    <div id="search-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="endpoint-card">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/detect?latitude={lat}&longitude={lng}</span>
+                </div>
+                <div class="endpoint-description">
+                    Detect location by coordinates. Returns nearest postal code with distance.
+                </div>
+                <div class="endpoint-examples">
+                    <p><strong>Example:</strong></p>
+                    <div class="code-block">curl "https://your-api.workers.dev/detect?latitude=-6.2088&longitude=106.8456"</div>
+                    <button class="try-it-out" onclick="tryDetect()">Try It Out</button>
+                    <div id="detect-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="endpoint-card">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/api/v1/search?{filters}</span>
+                </div>
+                <div class="endpoint-description">
+                    Advanced search with multiple filters. Search by province, city, district, etc.
+                </div>
+                <div class="endpoint-examples">
+                    <p><strong>Example:</strong></p>
+                    <div class="code-block">curl "https://your-api.workers.dev/api/v1/search?provinsi=DKI Jakarta&kota=Jakarta Pusat"</div>
+                    <button class="try-it-out" onclick="tryAdvancedSearch()">Try It Out</button>
+                    <div id="advanced-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="endpoint-card">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/api/v1/nearby?lat={lat}&lng={lng}&radius={km}</span>
+                </div>
+                <div class="endpoint-description">
+                    Find postal codes within specified radius of coordinates.
+                </div>
+                <div class="endpoint-examples">
+                    <p><strong>Example:</strong></p>
+                    <div class="code-block">curl "https://your-api.workers.dev/api/v1/nearby?latitude=-6.2088&longitude=106.8456&radius=5"</div>
+                    <button class="try-it-out" onclick="tryNearby()">Try It Out</button>
+                    <div id="nearby-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2>📚 Full API Documentation</h2>
+            <div id="swagger-ui"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@latest/swagger-ui-bundle.js"></script>
+    <script>
+        // Replace with your actual API base URL
+        const API_BASE_URL = 'https://your-api.workers.dev';
+
+        // Initialize Swagger UI
+        SwaggerUIBundle({
+            url: './openapi.yaml',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            layout: "StandaloneLayout",
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            tryItOutEnabled: true
+        });
+
+        // Try it out functions
+        async function trySearch() {
+            const resultDiv = document.getElementById('search-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?q=Jakarta`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <h4>Response:</h4>
+                    <pre class="code-block">${JSON.stringify(data, null, 2)}</pre>
+                    <p><strong>Status:</strong> ${data.statusCode === 200 ? '✅ Success' : '❌ Error'}</p>
+                    <p><strong>Results:</strong> ${data.data ? data.data.length : 0} postal codes found</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>Error:</h4>
+                    <pre class="code-block">${error.message}</pre>
+                    <p>❌ Request failed. Make sure the API is deployed and accessible.</p>
+                `;
+            }
+        }
+
+        async function tryDetect() {
+            const resultDiv = document.getElementById('detect-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/detect?latitude=-6.2088&longitude=106.8456`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <h4>Response:</h4>
+                    <pre class="code-block">${JSON.stringify(data, null, 2)}</pre>
+                    <p><strong>Status:</strong> ${data.statusCode === 200 ? '✅ Success' : '❌ Error'}</p>
+                    <p><strong>Location:</strong> ${data.data ? `${data.data.village}, ${data.data.district}` : 'Not found'}</p>
+                    <p><strong>Distance:</strong> ${data.data && data.data.distance ? `${data.data.distance.toFixed(2)} km` : 'N/A'}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>Error:</h4>
+                    <pre class="code-block">${error.message}</pre>
+                    <p>❌ Request failed. Make sure the API is deployed and accessible.</p>
+                `;
+            }
+        }
+
+        async function tryAdvancedSearch() {
+            const resultDiv = document.getElementById('advanced-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/search?provinsi=DKI Jakarta&kota=Jakarta Pusat`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <h4>Response:</h4>
+                    <pre class="code-block">${JSON.stringify(data, null, 2)}</pre>
+                    <p><strong>Status:</strong> ${data.success ? '✅ Success' : '❌ Error'}</p>
+                    <p><strong>Results:</strong> ${data.total || 0} postal codes found</p>
+                    <p><strong>Query Time:</strong> ${data.query_time_ms || 0}ms</p>
+                    <p><strong>Cached:</strong> ${data.cached ? '✅ Yes' : '❌ No'}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>Error:</h4>
+                    <pre class="code-block">${error.message}</pre>
+                    <p>❌ Request failed. Make sure the API is deployed and accessible.</p>
+                `;
+            }
+        }
+
+        async function tryNearby() {
+            const resultDiv = document.getElementById('nearby-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/nearby?latitude=-6.2088&longitude=106.8456&radius=5`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <h4>Response:</h4>
+                    <pre class="code-block">${JSON.stringify(data, null, 2)}</pre>
+                    <p><strong>Status:</strong> ${data.success ? '✅ Success' : '❌ Error'}</p>
+                    <p><strong>Nearby Locations:</strong> ${data.total || 0} postal codes found</p>
+                    <p><strong>Search Radius:</strong> ${data.radius_km || 5} km</p>
+                    <p><strong>Query Time:</strong> ${data.query_time_ms || 0}ms</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>Error:</h4>
+                    <pre class="code-block">${error.message}</pre>
+                    <p>❌ Request failed. Make sure the API is deployed and accessible.</p>
+                `;
+            }
+        }
+
+        // Check API status on page load
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const health = await response.json();
+                    console.log('✅ API is healthy:', health);
+                } else {
+                    console.warn('⚠️ API responded with error:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ API is not accessible:', error.message);
+            }
+        }
+
+        // Check status when page loads
+        checkAPIStatus();
+    </script>
+</body>
+</html>
