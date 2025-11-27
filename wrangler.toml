@@ -47,7 +47,7 @@ CORS_ORIGIN = "https://kodepos-worker-staging.tekipik.workers.dev"
 
 # Production Environment
 [env.production]
-name = "kodepos-api"
+name = "kodepos-worker"
 
 [[env.production.d1_databases]]
 binding = "KODEPOS_DB"
