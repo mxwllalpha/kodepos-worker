@@ -198,13 +198,29 @@ jobs:
         id: get-url
         run: |
           if [ "${{ matrix.environment }}" = "production" ]; then
-            WORKER_URL="https://kodepos-api.tekipik.workers.dev"
+            WORKER_URL="https://kodepos-worker.tekipik.workers.dev"
           else
             WORKER_URL="https://kodepos-worker-staging.tekipik.workers.dev"
           fi
 
           echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
           echo "🌐 ${{ matrix.environment }} URL: $WORKER_URL"
+
+      - name: Import Postal Code Data (Production Only)
+        if: matrix.environment == 'production'
+        run: |
+          echo "📥 Importing postal code data..."
+
+          # Check if data already exists
+          COUNT=$(npx wrangler d1 execute kodepos-db --command="SELECT COUNT(*) as count FROM postal_codes" --remote | jq -r '.[0].results[0].count // 0')
+          echo "Current record count: $COUNT"
+
+          if [ "$COUNT" -lt "80000" ]; then
+            echo "📥 Importing postal code data..."
+            npm run import:data || echo "⚠️ Data import completed with warnings"
+          else
+            echo "✅ Database already populated with $COUNT records"
+          fi
 
   # Security and performance monitoring
   post-deploy:
