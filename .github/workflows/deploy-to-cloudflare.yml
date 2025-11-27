@@ -51,10 +51,10 @@ jobs:
         sleep 30
 
         # Test health endpoint
-        curl -f https://kodepos-api.mxwllalpha.workers.dev/health || exit 1
+        curl -f https://kodepos-worker.tekipik.workers.dev/health || exit 1
 
         # Test search endpoint
-        curl -f "https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q=Jakarta&limit=5" || exit 1
+        curl -f "https://kodepos-worker.tekipik.workers.dev/api/v1/search?q=Jakarta&limit=5" || exit 1
 
         echo "✅ All deployment tests passed"
 
@@ -63,7 +63,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       with:
         token: '${{ github.token }}'
-        environment-url: https://kodepos-api.mxwllalpha.workers.dev
+        environment-url: https://kodepos-worker.tekipik.workers.dev
         environment: production
 
     - name: Update deployment status
@@ -71,6 +71,6 @@ jobs:
       if: github.ref == 'refs/heads/main'
       with:
         token: '${{ github.token }}'
-        environment-url: https://kodepos-api.mxwllalpha.workers.dev
+        environment-url: https://kodepos-worker.tekipik.workers.dev
         deployment-id: ${{ steps.deployment.outputs.deployment_id }}
         state: 'success'

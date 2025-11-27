@@ -28,8 +28,8 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler
 
-      - name: Authenticate with Cloudflare
-        run: wrangler auth whoami
+      - name: Verify Wrangler Authentication
+        run: wrangler whoami
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
@@ -171,12 +171,9 @@ jobs:
         run: |
           echo "🏥 Running health check for ${{ matrix.environment }}..."
 
-          # Get worker URL
-          WORKER_URL=$(npx wrangler whoami 2>/dev/null | grep -E "(workers\.dev|api\.megawe\.net)" || echo "Unknown URL")
-
           # Test health endpoint
           if [ "${{ matrix.environment }}" = "production" ]; then
-            TEST_URL="https://kodepos-api.tekipik.workers.dev/health"
+            TEST_URL="https://kodepos-worker.tekipik.workers.dev/health"
           else
             TEST_URL="https://kodepos-worker-staging.tekipik.workers.dev/health"
           fi
@@ -217,7 +214,7 @@ jobs:
         run: |
           echo "🎉 Deployment Summary:"
           echo "======================"
-          echo "Production: https://kodepos-api.tekipik.workers.dev"
+          echo "Production: https://kodepos-worker.tekipik.workers.dev"
           echo "Staging: https://kodepos-worker-staging.tekipik.workers.dev"
           echo ""
           echo "📊 Environment: ${{ github.ref_name }}"
