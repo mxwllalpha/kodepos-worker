@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Type check
+      run: npm run type-check
+
+    - name: Lint code
+      run: npm run lint
+
+    - name: Build
+      run: npm run build
+
+    - name: Validate data file
+      run: |
+        echo "Validating data file structure..."
+        if [ ! -f "data/kodepos.json" ]; then
+          echo "❌ Data file not found"
+          exit 1
+        fi
+
+        # Check if JSON is valid
+        if ! jq empty data/kodepos.json; then
+          echo "❌ Invalid JSON in data file"
+          exit 1
+        fi
+
+        # Check record count
+        COUNT=$(jq 'length' data/kodepos.json)
+        echo "Data file contains $COUNT records"
+
+        if [ "$COUNT" -lt "80000" ]; then
+          echo "❌ Data file has insufficient records"
+          exit 1
+        fi
+
+        echo "✅ Data file validation passed"
+
+    - name: Check schema validation
+      run: |
+        echo "Validating data schema..."
+        # Sample few records to validate structure
+        jq '.[0] | has("postal_code") and has("urban") and has("subdistrict") and has("city") and has("province_code")' data/kodepos.json
+
+    - name: Check OpenAPI spec
+      run: |
+        echo "Validating OpenAPI specification..."
+        if [ ! -f "openapi.yaml" ]; then
+          echo "❌ OpenAPI spec not found"
+          exit 1
+        fi
+
+        # Basic YAML validation
+        if ! python3 -c "import yaml; yaml.safe_load(open('openapi.yaml'))"; then
+          echo "❌ Invalid YAML in OpenAPI spec"
+          exit 1
+        fi
+
+        echo "✅ OpenAPI spec validation passed"

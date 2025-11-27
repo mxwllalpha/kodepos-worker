@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kodepos API - Basic Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .search-section {
+            margin-bottom: 40px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .search-button {
+            padding: 15px 30px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-button:hover {
+            background: #2980b9;
+        }
+
+        .search-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .quick-search {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-button {
+            padding: 8px 15px;
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-button:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .location-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .location-button {
+            width: 100%;
+            padding: 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .location-button:hover {
+            background: #229954;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: box-shadow 0.3s;
+        }
+
+        .result-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .postal-code {
+            background: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .detail-item {
+            padding: 8px 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            margin-top: 2px;
+        }
+
+        .coordinates {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .footer {
+            background: #ecf0f1;
+            padding: 20px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #34495e;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇮🇩 Kodepos API Indonesia</h1>
+            <p>Complete Indonesian Postal Code Search</p>
+        </div>
+
+        <div class="content">
+            <!-- API Status -->
+            <div id="apiStatus" class="status loading">
+                Checking API status...
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats" id="apiStats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalRecords">-</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="provinces">-</div>
+                    <div class="stat-label">Provinces</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="cities">-</div>
+                    <div class="stat-label">Cities/Regencies</div>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <h2>🔍 Search Postal Codes</h2>
+                <div class="search-container">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Enter village, district, city, or postal code..."
+                        autocomplete="off"
+                    >
+                    <button id="searchButton" class="search-button">Search</button>
+                </div>
+
+                <div class="quick-search">
+                    <strong>Quick examples:</strong>
+                    <button class="quick-button" onclick="quickSearch('Jakarta')">Jakarta</button>
+                    <button class="quick-button" onclick="quickSearch('Surabaya')">Surabaya</button>
+                    <button class="quick-button" onclick="quickSearch('Bali')">Bali</button>
+                    <button class="quick-button" onclick="quickSearch('Bandung')">Bandung</button>
+                    <button class="quick-button" onclick="quickSearch('10110')">10110</button>
+                    <button class="quick-button" onclick="quickSearch('Medan')">Medan</button>
+                </div>
+            </div>
+
+            <!-- Location Detection -->
+            <div class="location-section">
+                <h2>📍 Current Location</h2>
+                <button id="locationButton" class="location-button">
+                    🌍 Detect My Location
+                </button>
+                <div id="coordinatesInput" style="display: none;">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input
+                            type="number"
+                            id="latitudeInput"
+                            class="search-input"
+                            placeholder="Latitude (e.g., -6.2088)"
+                            step="0.0001"
+                            style="flex: 1;"
+                        >
+                        <input
+                            type="number"
+                            id="longitudeInput"
+                            class="search-input"
+                            placeholder="Longitude (e.g., 106.8456)"
+                            step="0.0001"
+                            style="flex: 1;"
+                        >
+                        <button onclick="detectManualLocation()" class="search-button">
+                            Detect
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="results">
+                <h2>📋 Search Results</h2>
+                <div id="resultsContainer"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by <a href="https://github.com/mxwllalpha/kodepos-api" target="_blank">Kodepos API Indonesia</a></p>
+            <p>🚀 Lightning-fast Indonesian postal code lookup with 83,761+ records</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'https://your-api.workers.dev';
+
+        // Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const locationButton = document.getElementById('locationButton');
+        const apiStatus = document.getElementById('apiStatus');
+        const results = document.getElementById('results');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const coordinatesInput = document.getElementById('coordinatesInput');
+        const latitudeInput = document.getElementById('latitudeInput');
+        const longitudeInput = document.getElementById('longitudeInput');
+
+        // State
+        let isLoading = false;
+        let currentResults = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAPIHealth();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Search input
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            // Auto-search with debounce
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (e.target.value.length >= 3) {
+                        performSearch();
+                    }
+                }, 500);
+            });
+
+            // Location detection
+            locationButton.addEventListener('click', detectCurrentLocation);
+
+            // Manual coordinates
+            latitudeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') detectManualLocation();
+            });
+            longitudeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') detectManualLocation();
+            });
+        }
+
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health/detailed`);
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    apiStatus.className = 'status success';
+                    apiStatus.textContent = '✅ API is healthy and operational';
+
+                    // Show statistics
+                    document.getElementById('apiStats').style.display = 'flex';
+                    document.getElementById('totalRecords').textContent = data.total_records.toLocaleString();
+                } else {
+                    apiStatus.className = 'status error';
+                    apiStatus.textContent = '⚠️ API health issues detected';
+                }
+            } catch (error) {
+                apiStatus.className = 'status error';
+                apiStatus.textContent = '❌ Cannot connect to API';
+                console.error('API health check failed:', error);
+            }
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            searchButton.disabled = loading;
+            searchButton.textContent = loading ? '🔍 Searching...' : 'Search';
+            locationButton.disabled = loading;
+        }
+
+        function showStatus(message, type = 'loading') {
+            const status = apiStatus;
+            status.className = `status ${type}`;
+            status.textContent = message;
+
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    status.className = 'status';
+                    status.textContent = '';
+                }, 3000);
+            }
+        }
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                showStatus('Please enter a search term', 'error');
+                return;
+            }
+
+            if (query.length < 2) {
+                showStatus('Search term must be at least 2 characters', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus(`Searching for "${query}"...`);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (response.ok && data.statusCode === 200) {
+                    currentResults = data.data || [];
+                    displayResults(currentResults, query);
+                    showStatus(`Found ${currentResults.length} results for "${query}"`, 'success');
+                } else {
+                    currentResults = [];
+                    showStatus(data.error || 'No results found', 'error');
+                    results.classList.remove('active');
+                }
+            } catch (error) {
+                currentResults = [];
+                showStatus('Search failed. Please try again.', 'error');
+                console.error('Search error:', error);
+                results.classList.remove('active');
+            }
+
+            setLoading(false);
+        }
+
+        function displayResults(data, query) {
+            if (!data || data.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div style="font-size: 3em; margin-bottom: 10px;">🔍</div>
+                        <h3>No results found</h3>
+                        <p>No postal codes found for "${query}"</p>
+                        <p>Try different search terms or check spelling</p>
+                    </div>
+                `;
+            } else {
+                resultsContainer.innerHTML = data.map(item => `
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">${item.village}</div>
+                            <div class="postal-code">${item.code}</div>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <div class="detail-label">District</div>
+                                <div class="detail-value">${item.district}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Regency</div>
+                                <div class="detail-value">${item.regency}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Province</div>
+                                <div class="detail-value">${item.province}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Timezone</div>
+                                <div class="detail-value">${item.timezone}</div>
+                            </div>
+                        </div>
+                        <div class="coordinates">
+                            📍 Coordinates: ${item.latitude}, ${item.longitude}
+                            ${item.elevation ? ` | 🏔️ Elevation: ${item.elevation}m` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            results.classList.add('active');
+        }
+
+        async function detectCurrentLocation() {
+            if (!navigator.geolocation) {
+                showStatus('Geolocation is not supported by your browser', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus('🌍 Getting your location...');
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    await performLocationDetection(latitude, longitude);
+                },
+                (error) => {
+                    setLoading(false);
+                    let message = 'Unable to get location';
+
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = 'Location access denied. Please enable location services.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = 'Location information unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            message = 'Location request timed out.';
+                            break;
+                    }
+
+                    showStatus(message, 'error');
+                    // Show manual input
+                    coordinatesInput.style.display = 'block';
+                },
+                {
+                    timeout: 10000,
+                    enableHighAccuracy: true
+                }
+            );
+        }
+
+        async function detectManualLocation() {
+            const lat = parseFloat(latitudeInput.value);
+            const lng = parseFloat(longitudeInput.value);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                showStatus('Please enter valid latitude and longitude', 'error');
+                return;
+            }
+
+            if (lat < -11 || lat > 6 || lng < 95 || lng > 141) {
+                showStatus('Coordinates must be within Indonesian bounds', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus('🔍 Detecting postal code...');
+            await performLocationDetection(lat, lng);
+        }
+
+        async function performLocationDetection(latitude, longitude) {
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/detect?latitude=${latitude}&longitude=${longitude}`
+                );
+                const data = await response.json();
+
+                if (response.ok && data.statusCode === 200 && data.data) {
+                    displayResults([data.data], 'Location');
+                    showStatus(`📍 Found postal code ${data.data.code}`, 'success');
+                } else {
+                    showStatus('No postal code found for these coordinates', 'error');
+                    results.classList.remove('active');
+                }
+            } catch (error) {
+                showStatus('Location detection failed', 'error');
+                console.error('Location detection error:', error);
+                results.classList.remove('active');
+            }
+
+            setLoading(false);
+        }
+
+        function quickSearch(query) {
+            searchInput.value = query;
+            performSearch();
+        }
+
+        // Global functions for buttons
+        window.quickSearch = quickSearch;
+        window.detectManualLocation = detectManualLocation;
+    </script>
+</body>
+</html>

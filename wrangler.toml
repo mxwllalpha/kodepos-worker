@@ -5,13 +5,14 @@
 name = "kodepos-worker"
 main = "src/index.ts"
 compatibility_date = "2024-11-03"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat_v2"]
 
-# D1 Database Configuration for postal code data
-[[d1_databases]]
-binding = "KODEPOS_DB"
-database_name = "kodepos-db"
-database_id = "your-database-id-will-be-created"
+# Auto-provisioned D1 Database for postal code data
+# This database will be automatically created during deployment
+# [[d1_databases]]
+# binding = "KODEPOS_DB"
+# database_name = "kodepos-db"
+# database_id will be auto-assigned by Cloudflare during deployment
 
 # Environment Variables
 [vars]
@@ -19,26 +20,26 @@ ENVIRONMENT = "production"
 API_VERSION = "v1"
 DATA_SOURCE_VERSION = "2025-11-26"
 
-# Development Environment
-[env.development]
-name = "kodepos-worker-dev"
+# Staging Environment for testing
+[env.staging]
+name = "kodepos-worker-staging"
 
-[[env.development.d1_databases]]
+[[env.staging.d1_databases]]
 binding = "KODEPOS_DB"
-database_name = "kodepos-db-dev"
-database_id = "your-dev-database-id"
+database_name = "kodepos-db-staging"
+# database_id will be auto-assigned by Cloudflare during deployment
 
-[env.development.vars]
-ENVIRONMENT = "development"
+[env.staging.vars]
+ENVIRONMENT = "staging"
 
 # Production Environment
 [env.production]
-name = "kodepos-worker"
+name = "kodepos-api"
 
 [[env.production.d1_databases]]
 binding = "KODEPOS_DB"
 database_name = "kodepos-db"
-database_id = "your-production-database-id"
+# database_id will be auto-assigned by Cloudflare during deployment
 
 [env.production.vars]
 ENVIRONMENT = "production"
@@ -49,12 +50,4 @@ watch_dir = "src"
 
 # Observability
 [observability]
-[observability.logs]
 enabled = true
-head_sampling_rate = 1
-persist = true
-
-[observability.traces]
-enabled = true
-head_sampling_rate = 1
-persist = true

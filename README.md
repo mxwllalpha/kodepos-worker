@@ -2,6 +2,9 @@
 
 <div align="center">
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mxwllalpha/kodepos-api)
+[![Built with Cloudflare](https://workers.cloudflare.com/built-with-cloudflare.svg)](https://cloudflare.com)
+
 ![Kodepos API](https://img.shields.io/badge/Version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Cloudflare Workers](https://img.shields.io/badge/Platform-Cloudflare%20Workers-orange.svg)
@@ -38,7 +41,17 @@
 
 ## 🚀 Quick Start
 
-### Installation
+### 🚀 One-Click Deployment (Recommended)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mxwllalpha/kodepos-api)
+
+Click the button above to deploy automatically to Cloudflare Workers with:
+- ✅ Auto-provisioned D1 database
+- ✅ Automated data import (83,761 postal codes)
+- ✅ Global CDN deployment
+- ✅ Production-ready configuration
+
+### Manual Installation
 
 ```bash
 # Clone the repository

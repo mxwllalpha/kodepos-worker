@@ -24,6 +24,67 @@ NC='\033[0m' # No Color
 SCRIPT_VERSION="1.0.0"
 GITHUB_REPO="https://github.com/mxwllalpha/kodepos-api"
 
+# Progress bar functions
+show_progress() {
+    local current=$1
+    local total=$2
+    local width=50
+    local percentage=$((current * 100 / total))
+    local filled=$((current * width / total))
+    local empty=$((width - filled))
+
+    printf "\r${CYAN}Progress: [${NC}"
+    printf "%*s" $filled | tr ' ' '█'
+    printf "%*s" $empty | tr ' ' '░'
+    printf "${CYAN}]${NC} ${percentage}%% (${current}/${total})"
+
+    if [ "$current" -eq "$total" ]; then
+        echo ""  # New line when complete
+    fi
+}
+
+start_spinner() {
+    local message="$1"
+    local spinner_chars=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+    local i=0
+
+    # Hide cursor
+    tput civis 2>/dev/null || true
+
+    while kill -0 $$ 2>/dev/null; do
+        printf "\r${YELLOW}%s${NC} %s" "${spinner_chars[$i]}" "$message"
+        i=$(( (i + 1) % 10 ))
+        sleep 0.1
+    done
+}
+
+stop_spinner() {
+    # Show cursor again
+    tput cnorm 2>/dev/null || true
+    printf "\r%*s\r" 100  # Clear the spinner line
+}
+
+estimate_time() {
+    local current=$1
+    local total=$2
+    local start_time=$3
+
+    if [ "$current" -gt 0 ]; then
+        local elapsed=$(($(date +%s) - start_time))
+        local eta=$((elapsed * total / current - elapsed))
+
+        if [ "$eta" -gt 60 ]; then
+            local minutes=$((eta / 60))
+            local seconds=$((eta % 60))
+            echo "${minutes}m ${seconds}s"
+        else
+            echo "${eta}s"
+        fi
+    else
+        echo "calculating..."
+    fi
+}
+
 # Function to print colored output
 print_header() {
     echo -e "${BLUE}============================================${NC}"
@@ -318,7 +379,7 @@ run_migrations() {
     echo ""
 }
 
-# Function to import postal code data
+# Function to import postal code data with progress indicators
 import_data() {
     print_step "6" "Importing Postal Code Data"
 
@@ -333,9 +394,16 @@ import_data() {
         if confirm "Do you want to use sample data instead?" "y"; then
             print_info "Using sample data for testing..."
             print_info "Running: node scripts/import-data.js sample"
+
+            # Start spinner for data preparation
+            start_spinner "Preparing sample data..." &
+            local spinner_pid=$!
+
             if node scripts/import-data.js sample; then
+                stop_spinner
                 print_success "Sample data import prepared"
             else
+                stop_spinner
                 print_error "Failed to prepare sample data"
                 exit 1
             fi
@@ -348,11 +416,16 @@ import_data() {
         local file_size=$(du -h "$data_file" | cut -f1)
         print_info "Found data file: $data_file ($file_size)"
 
-        # Validate JSON file
+        # Validate JSON file with progress
         print_info "Validating JSON file structure..."
+        start_spinner "Validating JSON file..." &
+        local spinner_pid=$!
+
         if node -e "try { JSON.parse(require('fs').readFileSync('$data_file', 'utf8')); console.log('✅ JSON is valid'); } catch(e) { console.error('❌ Invalid JSON:', e.message); process.exit(1); }"; then
+            stop_spinner
             print_success "JSON file validation passed"
         else
+            stop_spinner
             print_error "Invalid JSON file format"
             exit 1
         fi
@@ -361,7 +434,14 @@ import_data() {
             print_info "Importing postal code data..."
             print_info "Running: node scripts/import-data.js json \"$data_file\""
 
+            # Start spinner for data preparation
+            start_spinner "Preparing SQL import file..." &
+            local spinner_pid=$!
+
+            local import_start_time=$(date +%s)
+
             if node scripts/import-data.js json "$data_file"; then
+                stop_spinner
                 print_success "Postal code data import prepared"
 
                 # Check if SQL file was generated
@@ -369,30 +449,73 @@ import_data() {
                     local sql_size=$(du -h "migrations/002_import_kodepos_data.sql" | cut -f1)
                     print_info "SQL import file generated: $sql_size"
 
-                    print_info "Applying data to database..."
+                    # Import to database with progress tracking
+                    print_info "Applying data to database (this may take 3-5 minutes)..."
                     print_info "Running: npx wrangler d1 execute kodepos-db --file=migrations/002_import_kodepos_data.sql --remote"
 
-                    if npx wrangler d1 execute kodepos-db --file=migrations/002_import_kodepos_data.sql --remote; then
-                        print_success "Postal code data imported successfully"
+                    # Start background spinner for database import
+                    start_spinner "Importing 83,761 records to database..." &
+                    local db_spinner_pid=$!
 
-                        # Verify data import
+                    local db_import_start=$(date +%s)
+
+                    if npx wrangler d1 execute kodepos-db --file=migrations/002_import_kodepos_data.sql --remote; then
+                        stop_spinner
+
+                        # Calculate import time
+                        local db_import_time=$(($(date +%s) - db_import_start))
+                        print_success "Database import completed in ${db_import_time}s"
+
+                        # Verify data import with progress
                         print_info "Verifying data import..."
+                        start_spinner "Counting imported records..." &
+                        local verify_pid=$!
+
                         local record_count=$(npx wrangler d1 execute kodepos-db --command="SELECT COUNT(*) as total FROM postal_codes" --remote --json 2>/dev/null | grep -o '"total":[^,}]*' | cut -d':' -f2 | tr -d ' ')
+
+                        stop_spinner
+
                         if [ -n "$record_count" ] && [ "$record_count" -gt 0 ]; then
-                            print_success "Database contains $record_count postal code records"
+                            # Show progress for record count
+                            local expected=83761
+                            show_progress $record_count $expected
+
+                            if [ "$record_count" -eq "$expected" ]; then
+                                print_success "Database contains all $record_count postal code records (100% complete)"
+                            elif [ "$record_count" -gt 80000 ]; then
+                                print_success "Database contains $record_count postal code records ($(( record_count * 100 / expected ))% complete)"
+                            else
+                                print_warning "Database contains $record_count postal code records (expected ~$expected). Some records may be missing."
+                            fi
+
+                            # Calculate performance metrics
+                            local total_time=$(($(date +%s) - import_start_time))
+                            local records_per_sec=$((record_count / total_time))
+                            print_info "Performance: $records_per_sec records/second"
+
                         else
                             print_warning "Could not verify record count. Please check manually."
                         fi
                     else
+                        stop_spinner
                         print_error "Failed to import data to database"
                         print_info "You can manually run: npx wrangler d1 execute kodepos-db --file=migrations/002_import_kodepos_data.sql --remote"
+
+                        # Suggest retry with batch size
+                        print_info "If the import failed due to size, consider:"
+                        print_info "1. Check your D1 database quota"
+                        print_info "2. Try importing in smaller batches"
+                        print_info "3. Check your internet connection stability"
+
                         exit 1
                     fi
                 else
+                    stop_spinner
                     print_error "SQL import file was not generated"
                     exit 1
                 fi
             else
+                stop_spinner
                 print_error "Failed to prepare postal code data"
                 exit 1
             fi

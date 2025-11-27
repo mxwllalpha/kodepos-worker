@@ -28,25 +28,25 @@ export class KodeposService {
       const params: any[] = [];
 
       // Build dynamic query
-      if (query.kodepos) {
+      if (query.code) {
         sql += ' AND code = ?';
-        params.push(query.kodepos);
+        params.push(query.code);
       }
-      if (query.provinsi) {
+      if (query.province) {
         sql += ' AND LOWER(province) LIKE LOWER(?)';
-        params.push(`%${query.provinsi}%`);
+        params.push(`%${query.province}%`);
       }
-      if (query.kota) {
+      if (query.regency) {
         sql += ' AND LOWER(regency) LIKE LOWER(?)';
-        params.push(`%${query.kota}%`);
+        params.push(`%${query.regency}%`);
       }
-      if (query.kecamatan) {
+      if (query.district) {
         sql += ' AND LOWER(district) LIKE LOWER(?)';
-        params.push(`%${query.kecamatan}%`);
+        params.push(`%${query.district}%`);
       }
-      if (query.kelurahan) {
+      if (query.village) {
         sql += ' AND LOWER(village) LIKE LOWER(?)';
-        params.push(`%${query.kelurahan}%`);
+        params.push(`%${query.village}%`);
       }
       if (query.search) {
         sql += ' AND (LOWER(province) LIKE LOWER(?) OR LOWER(regency) LIKE LOWER(?) OR LOWER(district) LIKE LOWER(?) OR LOWER(village) LIKE LOWER(?) OR code = ?)';
@@ -63,7 +63,7 @@ export class KodeposService {
 
       return {
         success: true,
-        data: result.results as KodeposData[],
+        data: result.results as unknown as KodeposData[],
         total: result.results?.length || 0,
         query_time_ms: queryTime,
         cached: false
@@ -126,17 +126,17 @@ export class KodeposService {
         };
       }
 
-      const locationData = {
-        provinsi: result.province,
-        kota: result.regency,
-        kecamatan: result.district,
-        kelurahan: result.village,
-        kodepos: result.code,
-        latitude: result.latitude,
-        longitude: result.longitude,
-        elevation: result.elevation,
-        timezone: result.timezone,
-        distance: result.distance_km
+      const locationData: DetectLocationResponse['data'] = {
+        province: result.province as string,
+        regency: result.regency as string,
+        district: result.district as string,
+        village: result.village as string,
+        code: (result.code as number).toString(),
+        latitude: result.latitude as number,
+        longitude: result.longitude as number,
+        elevation: result.elevation as number,
+        timezone: result.timezone as string,
+        distance_km: result.distance_km as number
       };
 
       // Cache the result for 24 hours
@@ -205,7 +205,7 @@ export class KodeposService {
 
       return {
         success: true,
-        data: result.results as KodeposData[],
+        data: result.results as unknown as KodeposData[],
         total: result.results?.length || 0,
         query_time_ms: queryTime,
         cached: false
@@ -230,7 +230,7 @@ export class KodeposService {
         ORDER BY province
       `).all();
 
-      return result.results?.map(row => row.province) || [];
+      return result.results?.map(row => row.province as string) || [];
     } catch (error) {
       console.error('Error fetching provinces:', error);
       return [];
@@ -248,7 +248,7 @@ export class KodeposService {
         ORDER BY regency
       `).bind(province).all();
 
-      return result.results?.map(row => row.regency) || [];
+      return result.results?.map(row => row.regency as string) || [];
     } catch (error) {
       console.error('Error fetching cities:', error);
       return [];
@@ -278,18 +278,18 @@ export class KodeposService {
           try {
             await this.db.prepare(sql).bind(
               data.id,
-              data.kodepos,
-              data.provinsi,
-              data.kota,
-              data.kecamatan,
-              data.kelurahan,
+              data.code,
+              data.province,
+              data.regency,
+              data.district,
+              data.village,
               data.latitude,
               data.longitude
             ).run();
 
             inserted++;
           } catch (error) {
-            errors.push(`Failed to insert ${data.kodepos}: ${error}`);
+            errors.push(`Failed to insert ${data.code}: ${error}`);
           }
         }
       }
@@ -369,7 +369,7 @@ export class KodeposService {
         DELETE FROM location_cache WHERE expires_at <= CURRENT_TIMESTAMP
       `).run();
 
-      return result.changes || 0;
+      return result.meta.changes || 0;
     } catch (error) {
       console.error('Error cleaning cache:', error);
       return 0;

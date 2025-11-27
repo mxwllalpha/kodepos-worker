@@ -1,0 +1,76 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Workers
+
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Type check
+      run: npm run type-check
+
+    - name: Lint code
+      run: npm run lint
+
+    - name: Build
+      run: npm run build
+
+    - name: Deploy to Cloudflare Workers
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        command: deploy --env production
+
+    - name: Run post-deployment tests
+      run: |
+        # Wait for deployment to be ready
+        sleep 30
+
+        # Test health endpoint
+        curl -f https://kodepos-api.mxwllalpha.workers.dev/health || exit 1
+
+        # Test search endpoint
+        curl -f "https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q=Jakarta&limit=5" || exit 1
+
+        echo "✅ All deployment tests passed"
+
+    - name: Create GitHub Deployment
+      uses: chrnorm/deployment-action@v2
+      if: github.ref == 'refs/heads/main'
+      with:
+        token: '${{ github.token }}'
+        environment-url: https://kodepos-api.mxwllalpha.workers.dev
+        environment: production
+
+    - name: Update deployment status
+      uses: chrnorm/deployment-status@v2
+      if: github.ref == 'refs/heads/main'
+      with:
+        token: '${{ github.token }}'
+        environment-url: https://kodepos-api.mxwllalpha.workers.dev
+        deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+        state: 'success'

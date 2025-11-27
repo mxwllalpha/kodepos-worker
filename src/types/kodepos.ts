@@ -6,24 +6,29 @@
  * @website https://github.com/mxwlllph
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
+
 export interface KodeposData {
-  id: string;
-  kodepos: string;
-  provinsi: string;
-  kota: string;
-  kecamatan: string;
-  kelurahan: string;
-  latitude?: number;
-  longitude?: number;
+  id: number;
+  code: number;
+  village: string;
+  district: string;
+  regency: string;
+  province: string;
+  latitude: number;
+  longitude: number;
+  elevation?: number;
+  timezone?: string;
+  created_at?: string;
 }
 
 export interface LocationQuery {
   search?: string;
-  provinsi?: string;
-  kota?: string;
-  kecamatan?: string;
-  kelurahan?: string;
-  kodepos?: string;
+  province?: string;
+  regency?: string;
+  district?: string;
+  village?: string;
+  code?: string;
 }
 
 export interface CoordinateQuery {
@@ -44,13 +49,16 @@ export interface KodeposResponse {
 export interface DetectLocationResponse {
   success: boolean;
   data?: {
-    provinsi: string;
-    kota: string;
-    kecamatan: string;
-    kelurahan: string;
-    kodepos: string;
+    province: string;
+    regency: string;
+    district: string;
+    village: string;
+    code: string;
     latitude: number;
     longitude: number;
+    elevation?: number;
+    timezone?: string;
+    distance_km?: number;
   };
   message?: string;
   query_time_ms?: number;
@@ -73,4 +81,11 @@ export interface HealthCheckResponse {
   database: 'connected' | 'error';
   total_records: number;
   cache_enabled: boolean;
+}
+
+export interface Env {
+  KODEPOS_DB: D1Database;
+  ENVIRONMENT: string;
+  API_VERSION: string;
+  DATA_SOURCE_VERSION: string;
 }

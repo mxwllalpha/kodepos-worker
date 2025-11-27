@@ -12,7 +12,7 @@ import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 
 import { KodeposService } from './services/kodepos.service';
-import { transformToLegacyFormat, createLegacyResponse, createLegacyErrorResponse, createLegacyNotFoundResponse, validateSearchQuery, transformToLegacyDetectFormat, validateCoordinates } from './services/legacy-adapter.service';
+import { transformToLegacyFormat, createLegacyResponse, createLegacyErrorResponse, createLegacyNotFoundResponse, createLegacyServerErrorResponse, validateSearchQuery, transformToLegacyDetectFormat, validateCoordinates } from './services/legacy-adapter.service';
 import type { Env, ApiResponse, HealthCheckResponse } from './types/kodepos';
 
 // Create Hono app
@@ -321,7 +321,7 @@ app.get('/detect', async (c) => {
 
     if (result.success && result.data) {
       // Transform data to legacy detect format using the adapter service
-      const legacyData = transformToLegacyDetectFormat(result.data, result.data.distance);
+      const legacyData = transformToLegacyDetectFormat(result.data, result.data.distance_km);
       return c.json({
         statusCode: 200,
         code: 'OK',

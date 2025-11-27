@@ -9,7 +9,8 @@
     "deploy": "wrangler deploy",
     "build": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "import:data": "node scripts/import-data.js"
   },
   "dependencies": {
     "hono": "^4.6.9"
@@ -28,5 +29,17 @@
     "cloudflare-workers"
   ],
   "author": "Maxwell Alpha - https://github.com/mxwllalpha - mxwllalpha@gmail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "cloudflare": {
+    "bindings": {
+      "KODEPOS_DB": {
+        "description": "D1 database for Indonesian postal codes",
+        "type": "d1"
+      }
+    },
+    "compatibility_flags": ["nodejs_compat_v2"],
+    "triggers": {
+      "crons": []
+    }
+  }
 }

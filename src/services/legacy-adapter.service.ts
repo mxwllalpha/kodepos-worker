@@ -47,8 +47,9 @@ export interface LegacyDetectResponse {
 /**
  * Transform modern KodeposData to legacy format
  */
-export function transformToLegacyFormat(data: KodeposData[]): LegacyPostalCode[] {
-  return data.map(item => ({
+export function transformToLegacyFormat(data: KodeposData | KodeposData[]): LegacyPostalCode[] {
+  const dataArray = Array.isArray(data) ? data : [data];
+  return dataArray.map(item => ({
     code: item.code?.toString() || '0',
     village: item.village || '',
     district: item.district || '',
@@ -66,16 +67,16 @@ export function transformToLegacyFormat(data: KodeposData[]): LegacyPostalCode[]
  */
 export function transformToLegacyDetectFormat(item: any, distance?: number): LegacyDetectResponse['data'] {
   return {
-    code: item.kodepos || item.code || 0,
-    village: item.kelurahan || item.village || '',
-    district: item.kecamatan || item.district || '',
-    regency: item.kota || item.regency || '',
-    province: item.provinsi || item.province || '',
+    code: item.code || 0,
+    village: item.village || '',
+    district: item.district || '',
+    regency: item.regency || '',
+    province: item.province || '',
     latitude: item.latitude || 0,
     longitude: item.longitude || 0,
     elevation: item.elevation || 0,
     timezone: item.timezone || 'WIB',
-    distance: distance
+    distance: distance || item.distance_km || 0
   };
 }
 
@@ -126,7 +127,7 @@ export function createLegacyServerErrorResponse(message: string = 'Internal serv
 /**
  * Validate and transform search query parameters
  */
-export function validateSearchQuery(query: string | null): { valid: boolean; error?: string; query?: string } {
+export function validateSearchQuery(query: string | null | undefined): { valid: boolean; error?: string; query?: string } {
   if (!query) {
     return { valid: false, error: 'Missing required parameter: q' };
   }
@@ -147,7 +148,7 @@ export function validateSearchQuery(query: string | null): { valid: boolean; err
 /**
  * Validate coordinates
  */
-export function validateCoordinates(lat: string | null, lng: string | null): {
+export function validateCoordinates(lat: string | null | undefined, lng: string | null | undefined): {
   valid: boolean;
   error?: string;
   latitude?: number;
