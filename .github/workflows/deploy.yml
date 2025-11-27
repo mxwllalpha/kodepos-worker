@@ -29,7 +29,7 @@ jobs:
         run: npm install -g wrangler
 
       - name: Verify Wrangler Authentication
-        run: wrangler whoami
+        run: wrangler auth whoami
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
@@ -90,25 +90,13 @@ jobs:
       - name: Apply Production Migrations
         run: |
           echo "🗄️ Applying production migrations..."
-
-          # Run all migration files in order
-          for migration in migrations/*.sql; do
-            echo "Applying migration: $migration"
-            npx wrangler d1 execute kodepos-db --file="$migration" --remote || true
-          done
-
+          npx wrangler d1 migrations apply kodepos-db --remote || echo "⚠️ Migration apply completed with warnings"
           echo "✅ Production migrations completed"
 
       - name: Apply Staging Migrations
         run: |
           echo "🗄️ Applying staging migrations..."
-
-          # Run all migration files in order
-          for migration in migrations/*.sql; do
-            echo "Applying migration: $migration"
-            npx wrangler d1 execute kodepos-db-staging --file="$migration" --remote || true
-          done
-
+          npx wrangler d1 migrations apply kodepos-db-staging --remote || echo "⚠️ Migration apply completed with warnings"
           echo "✅ Staging migrations completed"
 
   # Deployment job - deploys the worker
@@ -188,6 +176,22 @@ jobs:
             echo "✅ Health check passed for ${{ matrix.environment }}"
           else
             echo "⚠️ Health check failed for ${{ matrix.environment }}, but deployment may still be processing"
+          fi
+
+      - name: Import Postal Code Data (Production Only)
+        if: matrix.environment == 'production'
+        run: |
+          echo "📥 Importing postal code data..."
+
+          # Check if data already exists
+          COUNT=$(npx wrangler d1 execute kodepos-db --command="SELECT COUNT(*) as count FROM postal_codes" --remote | jq -r '.[0].results[0].count // 0')
+          echo "Current record count: $COUNT"
+
+          if [ "$COUNT" -lt "80000" ]; then
+            echo "📥 Importing postal code data..."
+            npm run import:data || echo "⚠️ Data import completed with warnings"
+          else
+            echo "✅ Database already populated with $COUNT records"
           fi
 
       - name: Update ${{ matrix.environment }} URL

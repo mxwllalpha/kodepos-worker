@@ -57,7 +57,7 @@ database_id = "AUTO-CREATED-BY-GITHUB-ACTIONS"
 [env.production.vars]
 ENVIRONMENT = "production"
 DEBUG = "false"
-CORS_ORIGIN = "https://api.megawe.net"
+CORS_ORIGIN = "https://kodepos-worker.tekipik.workers.dev"
 
 # Build Configuration
 [build]

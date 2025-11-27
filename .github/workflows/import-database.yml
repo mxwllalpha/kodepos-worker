@@ -92,7 +92,7 @@ jobs:
         sleep 30
 
         # Test search functionality
-        RESPONSE=$(curl -s "https://kodepos-api-staging.mxwllalpha.workers.dev/api/v1/search?q=Jakarta&limit=5")
+        RESPONSE=$(curl -s "https://kodepos-worker-staging.tekipik.workers.dev/api/v1/search?q=Jakarta&limit=5")
         if echo "$RESPONSE" | grep -q '"success":true'; then
           echo "✅ API search test passed"
         else
