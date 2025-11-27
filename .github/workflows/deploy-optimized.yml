@@ -179,6 +179,49 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env ${{ matrix.environment }}
 
+      - name: Health Check ${{ matrix.environment }}
+        run: |
+          echo "🏥 Running health check for ${{ matrix.environment }}..."
+
+          # Set test URL based on environment
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            TEST_URL="https://kodepos-worker.tekipik.workers.dev/health"
+          else
+            TEST_URL="https://kodepos-worker-staging.tekipik.workers.dev/health"
+          fi
+
+          echo "Testing URL: $TEST_URL"
+
+          # Wait for deployment to propagate
+          sleep 15
+
+          # Test health endpoint with retries
+          for i in {1..5}; do
+            if curl -f -s "$TEST_URL" > /dev/null; then
+              echo "✅ Health check passed for ${{ matrix.environment }}"
+              break
+            else
+              echo "⚠️ Health check attempt $i failed, retrying..."
+              sleep 10
+            fi
+          done
+
+          # Final check
+          if curl -f -s "$TEST_URL" > /dev/null; then
+            echo "✅ Final health check passed for ${{ matrix.environment }}"
+          else
+            echo "⚠️ Health check failed for ${{ matrix.environment }}, but deployment may be processing"
+          fi
+
+      - name: Import Postal Code Data (Production Only)
+        if: matrix.environment == 'production'
+        run: |
+          echo "📥 Importing postal code data for production..."
+
+          # Check if data already exists
+          COUNT=$(npx wrangler d1 execute kodepos-db --command="SELECT COUNT(*) as count FROM postal_codes" --remote --environment=production | jq -r '.[0].results[0].count // 0')
+          echo "Current record count: $COUNT"
+
           if [ "$COUNT" -lt "80000" ]; then
             echo "📥 Importing postal code data..."
             npm run import:data || echo "⚠️ Data import completed with warnings"

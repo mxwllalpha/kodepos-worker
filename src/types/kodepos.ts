@@ -88,4 +88,28 @@ export interface Env {
   ENVIRONMENT: string;
   API_VERSION: string;
   DATA_SOURCE_VERSION: string;
+
+  // Configuration variables
+  API_BASE_URL?: string;
+  WORKER_NAME?: string;
+  DATABASE_NAME?: string;
+  LOG_LEVEL?: string;
+
+  // Feature flags
+  ENABLE_CACHE?: string;
+  ENABLE_RATE_LIMITING?: string;
+  ENABLE_LOGGING?: string;
+
+  // Performance settings
+  API_CACHE_TTL?: string;
+  RATE_LIMIT_REQUESTS?: string;
+  RATE_LIMIT_WINDOW?: string;
+
+  // Security settings
+  CORS_ORIGIN?: string;
+  DEBUG?: string;
+
+  // Cloudflare settings
+  CLOUDFLARE_API_TOKEN?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
 }

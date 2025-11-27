@@ -13,9 +13,17 @@ compatibility_flags = ["nodejs_compat_v2"]
 ENVIRONMENT = "development"
 API_VERSION = "v1"
 DATA_SOURCE_VERSION = "2025-11-26"
+API_BASE_URL = "http://localhost:8787"
+WORKER_NAME = "kodepos-worker-dev"
+DATABASE_NAME = "kodepos-db-dev"
 CORS_ORIGIN = "*"
 RATE_LIMIT_REQUESTS = "100"
 RATE_LIMIT_WINDOW = "60"
+API_CACHE_TTL = "300"
+ENABLE_CACHE = "true"
+ENABLE_RATE_LIMITING = "false"
+ENABLE_LOGGING = "true"
+LOG_LEVEL = "info"
 
 # Development Environment (local)
 [env.development]
@@ -29,7 +37,12 @@ preview_database_id = "kodepos-db-local"
 
 [env.development.vars]
 ENVIRONMENT = "development"
+API_BASE_URL = "http://localhost:8787"
+WORKER_NAME = "kodepos-worker-dev"
+DATABASE_NAME = "kodepos-db-dev"
 DEBUG = "true"
+RATE_LIMIT_REQUESTS = "10"
+API_CACHE_TTL = "300"
 
 # Staging Environment for testing
 [env.staging]
@@ -42,8 +55,13 @@ database_id = "AUTO-CREATED-BY-GITHUB-ACTIONS"
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
+API_BASE_URL = "https://kodepos-worker-staging.tekipik.workers.dev"
+WORKER_NAME = "kodepos-worker-staging"
+DATABASE_NAME = "kodepos-db-staging"
 DEBUG = "true"
 CORS_ORIGIN = "https://kodepos-worker-staging.tekipik.workers.dev"
+RATE_LIMIT_REQUESTS = "50"
+API_CACHE_TTL = "1800"
 
 # Production Environment
 [env.production]
@@ -56,8 +74,13 @@ database_id = "AUTO-CREATED-BY-GITHUB-ACTIONS"
 
 [env.production.vars]
 ENVIRONMENT = "production"
+API_BASE_URL = "https://kodepos-api.tekipik.workers.dev"
+WORKER_NAME = "kodepos-worker"
+DATABASE_NAME = "kodepos-db"
 DEBUG = "false"
 CORS_ORIGIN = "https://kodepos-worker.tekipik.workers.dev"
+RATE_LIMIT_REQUESTS = "100"
+API_CACHE_TTL = "3600"
 
 # Build Configuration
 [build]

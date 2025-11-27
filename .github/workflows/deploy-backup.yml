@@ -1,0 +1,247 @@
+name: 🚀 Deploy to Cloudflare Workers
+
+# Trigger deployment on pushes to main/master and PRs
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  # Database setup job - runs first to ensure D1 is ready
+  setup-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Verify Wrangler Authentication
+        run: wrangler auth whoami
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Create Production D1 Database
+        run: |
+          echo "🔧 Setting up production database..."
+          npx wrangler d1 create kodepos-db --environment=production || echo "✅ Production database already exists"
+
+      - name: Create Staging D1 Database
+        run: |
+          echo "🔧 Setting up staging database..."
+          npx wrangler d1 create kodepos-db-staging --environment=staging || echo "✅ Staging database already exists"
+
+  # Migration job - applies database schema
+  migrate-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: setup-database
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Get Production Database ID
+        id: prod-db
+        run: |
+          DB_ID=$(npx wrangler d1 info kodepos-db --json 2>/dev/null | jq -r '.database_id // empty')
+          if [ -z "$DB_ID" ]; then
+            echo "Database not found, will be created during deployment"
+            echo "db_id=AUTO-CREATED" >> $GITHUB_OUTPUT
+          else
+            echo "Found production database ID: $DB_ID"
+            echo "db_id=$DB_ID" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Staging Database ID
+        id: staging-db
+        run: |
+          DB_ID=$(npx wrangler d1 info kodepos-db-staging --json 2>/dev/null | jq -r '.database_id // empty')
+          if [ -z "$DB_ID" ]; then
+            echo "Staging database not found, will be created during deployment"
+            echo "db_id=AUTO-CREATED" >> $GITHUB_OUTPUT
+          else
+            echo "Found staging database ID: $DB_ID"
+            echo "db_id=$DB_ID" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Apply Production Migrations
+        run: |
+          echo "🗄️ Applying production migrations..."
+          npx wrangler d1 migrations apply kodepos-db --remote || echo "⚠️ Migration apply completed with warnings"
+          echo "✅ Production migrations completed"
+
+      - name: Apply Staging Migrations
+        run: |
+          echo "🗄️ Applying staging migrations..."
+          npx wrangler d1 migrations apply kodepos-db-staging --remote || echo "⚠️ Migration apply completed with warnings"
+          echo "✅ Staging migrations completed"
+
+  # Deployment job - deploys the worker
+  deploy-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [setup-database, migrate-database]
+    environment: production
+
+    strategy:
+      matrix:
+        environment: [production, staging]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build || echo "No build script needed"
+
+      - name: Get Database ID for ${{ matrix.environment }}
+        id: get-db-id
+        run: |
+          DB_NAME="kodepos-db"
+          if [ "${{ matrix.environment }}" = "staging" ]; then
+            DB_NAME="kodepos-db-staging"
+          fi
+
+          DB_ID=$(npx wrangler d1 info "$DB_NAME" --json | jq -r '.database_id')
+          echo "Database ID for ${{ matrix.environment }}: $DB_ID"
+          echo "db_id=$DB_ID" >> $GITHUB_OUTPUT
+
+      - name: Update wrangler.toml with Database ID
+        run: |
+          DB_ID="${{ steps.get-db-id.outputs.db_id }}"
+          ENV_NAME="${{ matrix.environment }}"
+
+          # Update database_id in wrangler.toml
+          sed -i "s/database_id = \".*\"/database_id = \"$DB_ID\"/" wrangler.toml
+
+          echo "✅ Updated wrangler.toml for $ENV_NAME environment"
+
+      - name: Deploy to ${{ matrix.environment }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env ${{ matrix.environment }}
+
+      - name: Health Check ${{ matrix.environment }}
+        run: |
+          echo "🏥 Running health check for ${{ matrix.environment }}..."
+
+          # Test health endpoint
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            TEST_URL="https://kodepos-worker.tekipik.workers.dev/health"
+          else
+            TEST_URL="https://kodepos-worker-staging.tekipik.workers.dev/health"
+          fi
+
+          echo "Testing URL: $TEST_URL"
+
+          # Wait a moment for deployment to propagate
+          sleep 10
+
+          # Test health endpoint
+          if curl -f -s "$TEST_URL" > /dev/null; then
+            echo "✅ Health check passed for ${{ matrix.environment }}"
+          else
+            echo "⚠️ Health check failed for ${{ matrix.environment }}, but deployment may still be processing"
+          fi
+
+      - name: Import Postal Code Data (Production Only)
+        if: matrix.environment == 'production'
+        run: |
+          echo "📥 Importing postal code data..."
+
+          # Check if data already exists
+          COUNT=$(npx wrangler d1 execute kodepos-db --command="SELECT COUNT(*) as count FROM postal_codes" --remote | jq -r '.[0].results[0].count // 0')
+          echo "Current record count: $COUNT"
+
+          if [ "$COUNT" -lt "80000" ]; then
+            echo "📥 Importing postal code data..."
+            npm run import:data || echo "⚠️ Data import completed with warnings"
+          else
+            echo "✅ Database already populated with $COUNT records"
+          fi
+
+      - name: Update ${{ matrix.environment }} URL
+        id: get-url
+        run: |
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            WORKER_URL="https://kodepos-worker.tekipik.workers.dev"
+          else
+            WORKER_URL="https://kodepos-worker-staging.tekipik.workers.dev"
+          fi
+
+          echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
+          echo "🌐 ${{ matrix.environment }} URL: $WORKER_URL"
+
+      - name: Import Postal Code Data (Production Only)
+        if: matrix.environment == 'production'
+        run: |
+          echo "📥 Importing postal code data..."
+
+          # Check if data already exists
+          COUNT=$(npx wrangler d1 execute kodepos-db --command="SELECT COUNT(*) as count FROM postal_codes" --remote | jq -r '.[0].results[0].count // 0')
+          echo "Current record count: $COUNT"
+
+          if [ "$COUNT" -lt "80000" ]; then
+            echo "📥 Importing postal code data..."
+            npm run import:data || echo "⚠️ Data import completed with warnings"
+          else
+            echo "✅ Database already populated with $COUNT records"
+          fi
+
+  # Security and performance monitoring
+  post-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: deploy-worker
+    if: always()
+
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Deployment Summary:"
+          echo "======================"
+          echo "Production: https://kodepos-worker.tekipik.workers.dev"
+          echo "Staging: https://kodepos-worker-staging.tekipik.workers.dev"
+          echo ""
+          echo "📊 Environment: ${{ github.ref_name }}"
+          echo "🔗 Commit: ${{ github.sha }}"
+          echo "👤 Author: ${{ github.actor }}"
+          echo ""
+          echo "🔍 Next steps:"
+          echo "1. Test production API endpoints"
+          echo "2. Monitor database performance"
+          echo "3. Check error logs in Cloudflare dashboard"

@@ -13,6 +13,7 @@ import { prettyJSON } from 'hono/pretty-json';
 
 import { KodeposService } from './services/kodepos.service';
 import { transformToLegacyFormat, createLegacyResponse, createLegacyErrorResponse, createLegacyNotFoundResponse, createLegacyServerErrorResponse, validateSearchQuery, transformToLegacyDetectFormat, validateCoordinates } from './services/legacy-adapter.service';
+import { ConfigurationService } from './services/configuration.service';
 import type { Env, ApiResponse, HealthCheckResponse } from './types/kodepos';
 
 // Create Hono app

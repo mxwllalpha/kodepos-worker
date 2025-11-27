@@ -1,4 +1,43 @@
-# 🚀 Kodepos API Indonesia - Automated Deployment
+#!/usr/bin/env node
+
+/**
+ * Documentation Generation Script
+ * Generates documentation with environment-specific URLs and examples
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment from process.env or default to development
+const environment = process.env.ENVIRONMENT || 'development';
+
+// Environment-specific configurations
+const configs = {
+  development: {
+    apiUrl: 'http://localhost:8787',
+    workerName: 'kodepos-worker-dev',
+    dbName: 'kodepos-db-dev'
+  },
+  staging: {
+    apiUrl: 'https://kodepos-worker-staging.tekipik.workers.dev',
+    workerName: 'kodepos-worker-staging',
+    dbName: 'kodepos-db-staging'
+  },
+  production: {
+    apiUrl: 'https://kodepos-api.tekipik.workers.dev',
+    workerName: 'kodepos-worker',
+    dbName: 'kodepos-db'
+  }
+};
+
+const config = configs[environment];
+
+function generateReadme() {
+  const template = `# 🚀 Kodepos API Indonesia - Automated Deployment
 
 <div align="center">
 
@@ -64,9 +103,9 @@ Click "Deploy to Cloudflare" button above for:
 ### 🔄 Automatic Workflow Features
 
 The GitHub Actions workflow handles:
-1. **Database Creation**: Creates `kodepos-db` and `kodepos-db-staging`
+1. **Database Creation**: Creates \`kodepos-db\` and \`kodepos-db-staging\`
 2. **Migration Application**: Applies all SQL migrations in order
-3. **Configuration Update**: Updates `wrangler.toml` with actual database IDs
+3. **Configuration Update**: Updates \`wrangler.toml\` with actual database IDs
 4. **Deployment**: Deploys to production and staging environments
 5. **Health Checks**: Verifies deployment and API functionality
 6. **Environment Management**: Separate production and staging databases
@@ -74,9 +113,9 @@ The GitHub Actions workflow handles:
 ### 🌐 Deployment URLs
 
 After deployment, your API will be available at:
-- **Production**: https://kodepos-api.tekipik.workers.dev
-- **Staging**: https://kodepos-worker-staging.tekipik.workers.dev
-- **Development**: http://localhost:8787
+- **Production**: ${config.apiUrl}
+- **Staging**: ${configs.staging.apiUrl}
+- **Development**: ${configs.development.apiUrl}
 
 ### ⚙️ Environment Configuration
 
@@ -84,17 +123,17 @@ The deployment automatically configures three environments:
 
 | Environment | Worker Name | Database | URL |
 |-------------|--------------|----------|-----|
-| **Production** | `kodepos-worker` | `kodepos-db` | https://kodepos-api.tekipik.workers.dev |
-| **Staging** | `kodepos-worker-staging` | `kodepos-db-staging` | https://kodepos-worker-staging.tekipik.workers.dev |
-| **Development** | `kodepos-worker-dev` | `kodepos-db-dev` | Local development |
+| **Production** | \`kodepos-worker\` | \`kodepos-db\` | ${config.apiUrl} |
+| **Staging** | \`kodepos-worker-staging\` | \`kodepos-db-staging\` | ${configs.staging.apiUrl} |
+| **Development** | \`kodepos-worker-dev\` | \`kodepos-db-dev\` | Local development |
 
 ## 💻 Usage Examples
 
 ### Search by Postal Code
 
-```javascript
+\`\`\`javascript
 // Find postal code 12345
-const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/code/12345');
+const response = await fetch('${config.apiUrl}/api/v1/code/12345');
 const data = await response.json();
 
 console.log(data);
@@ -110,87 +149,87 @@ console.log(data);
 //     "longitude": 106.8456
 //   }
 // }
-```
+\`\`\`
 
 ### Search by Location Name
 
-```javascript
+\`\`\`javascript
 // Search for locations named "Jakarta"
-const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/search?q=Jakarta&limit=10');
+const response = await fetch('${config.apiUrl}/api/v1/search?q=Jakarta&limit=10');
 const data = await response.json();
-```
+\`\`\`
 
 ### Find Nearby Locations
 
-```javascript
+\`\`\`javascript
 // Find locations within 5km of coordinates
-const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5');
+const response = await fetch('${config.apiUrl}/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5');
 const data = await response.json();
-```
+\`\`\`
 
 ### List Administrative Areas
 
-```javascript
+\`\`\`javascript
 // Get all provinces
-const provinces = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/provinces');
+const provinces = await fetch('${config.apiUrl}/api/v1/provinces');
 
 // Get regencies in a province
-const regencies = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/regencies/DKI%20Jakarta');
-```
+const regencies = await fetch('${config.apiUrl}/api/v1/regencies/DKI%20Jakarta');
+\`\`\`
 
 ## 🔧 API Reference
 
 ### Core Endpoints
 
-#### GET `/api/v1/search`
+#### GET \`/api/v1/search\`
 Search postal codes by various criteria
-- **Parameters**: `search`, `kodepos`, `provinsi`, `kota`, `kecamatan`, `kelurahan`
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/search?q=Jakarta`
+- **Parameters**: \`search\`, \`kodepos\`, \`provinsi\`, \`kota\`, \`kecamatan\`, \`kelurahan\`
+- **Example**: \`${config.apiUrl}/api/v1/search?q=Jakarta\`
 
-#### GET `/api/v1/code/:kodepos`
+#### GET \`/api/v1/code/:kodepos\`
 Get specific postal code
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/code/12345`
+- **Example**: \`${config.apiUrl}/api/v1/code/12345\`
 
-#### GET `/api/v1/detect`
+#### GET \`/api/v1/detect\`
 Detect location by coordinates
-- **Parameters**: `latitude`, `longitude`, `radius`
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/detect?lat=-6.2088&lng=106.8456`
+- **Parameters**: \`latitude\`, \`longitude\`, \`radius\`
+- **Example**: \`${config.apiUrl}/api/v1/detect?lat=-6.2088&lng=106.8456\`
 
-#### GET `/api/v1/nearby`
+#### GET \`/api/v1/nearby\`
 Find postal codes within radius
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5`
+- **Example**: \`${config.apiUrl}/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5\`
 
-#### GET `/api/v1/provinces`
+#### GET \`/api/v1/provinces\`
 List all provinces
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/provinces`
+- **Example**: \`${config.apiUrl}/api/v1/provinces\`
 
-#### GET `/api/v1/cities/:province`
+#### GET \`/api/v1/cities/:province\`
 Get cities in a province
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/cities/DKI%20Jakarta`
+- **Example**: \`${config.apiUrl}/api/v1/cities/DKI%20Jakarta\`
 
-#### GET `/api/v1/stats`
+#### GET \`/api/v1/stats\`
 Get database statistics
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/stats`
+- **Example**: \`${config.apiUrl}/api/v1/stats\`
 
 ### Health Check Endpoints
 
-#### GET `/health`
+#### GET \`/health\`
 Basic health check
-- **Example**: `https://kodepos-api.tekipik.workers.dev/health`
+- **Example**: \`${config.apiUrl}/health\`
 
-#### GET `/health/detailed`
+#### GET \`/health/detailed\`
 Detailed health check with statistics
-- **Example**: `https://kodepos-api.tekipik.workers.dev/health/detailed`
+- **Example**: \`${config.apiUrl}/health/detailed\`
 
 ### Legacy Compatibility
 
-#### GET `/search`
+#### GET \`/search\`
 Legacy endpoint for place search (compatible with original Kodepos API)
-- **Example**: `https://kodepos-api.tekipik.workers.dev/search?q=Jakarta`
+- **Example**: \`${config.apiUrl}/search?q=Jakarta\`
 
-#### GET `/detect`
+#### GET \`/detect\`
 Legacy endpoint for location detection
-- **Example**: `https://kodepos-api.tekipik.workers.dev/detect?latitude=-6.2088&longitude=106.8456`
+- **Example**: \`${config.apiUrl}/detect?latitude=-6.2088&longitude=106.8456\`
 
 ## 📖 Documentation
 
@@ -199,7 +238,7 @@ Legacy endpoint for location detection
 #### Data Structure
 Each postal code record contains:
 
-```typescript
+\`\`\`typescript
 interface KodeposData {
   id: number;
   code: number;
@@ -212,7 +251,7 @@ interface KodeposData {
   elevation?: number;   // Elevation above sea level
   timezone?: string;   // Timezone information
 }
-```
+\`\`\`
 
 #### Administrative Hierarchy
 Indonesian postal codes follow this hierarchy:
@@ -221,7 +260,7 @@ Indonesian postal codes follow this hierarchy:
 #### Response Format
 All API responses follow this structure:
 
-```typescript
+\`\`\`typescript
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -230,19 +269,19 @@ interface ApiResponse<T> {
   timestamp: string;
   version: string;
 }
-```
+\`\`\`
 
 ### Error Handling
 
 #### HTTP Status Codes
-- `200 OK` - Request successful
-- `400 Bad Request` - Invalid parameters
-- `404 Not Found` - Resource not found
-- `429 Too Many Requests` - Rate limit exceeded
-- `500 Internal Server Error` - Server error
+- \`200 OK\` - Request successful
+- \`400 Bad Request\` - Invalid parameters
+- \`404 Not Found\` - Resource not found
+- \`429 Too Many Requests\` - Rate limit exceeded
+- \`500 Internal Server Error\` - Server error
 
 #### Error Response Format
-```json
+\`\`\`json
 {
   "success": false,
   "error": "Description of the error",
@@ -250,7 +289,7 @@ interface ApiResponse<T> {
   "timestamp": "2024-01-01T00:00:00.000Z",
   "version": "1.0.0"
 }
-```
+\`\`\`
 
 ### Rate Limiting
 
@@ -276,7 +315,7 @@ interface ApiResponse<T> {
 
 ### Quick Start
 
-```bash
+\`\`\`bash
 # Clone repository
 git clone https://github.com/mxwllalpha/kodepos-worker.git
 cd kodepos-worker
@@ -293,11 +332,11 @@ npm run setup:local
 
 # Start development server
 npm run dev
-```
+\`\`\`
 
 ### Development Scripts
 
-```bash
+\`\`\`bash
 # Development
 npm run dev                  # Start development server
 npm run dev:staging          # Staging development
@@ -324,13 +363,13 @@ npm run deploy:development    # Deploy to development
 npm run deploy:staging        # Deploy to staging
 npm run deploy                # Deploy to production
 npm run deploy:all             # Deploy to all environments
-```
+\`\`\`
 
 ### Environment Variables
 
 Key environment variables for local development:
 
-```bash
+\`\`\`bash
 # Environment
 ENVIRONMENT=development
 
@@ -347,7 +386,7 @@ ENABLE_LOGGING=true
 # Debug
 LOG_LEVEL=info
 DEBUG=true
-```
+\`\`\`
 
 ## 🔧 Configuration
 
@@ -379,12 +418,12 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 ### Development Workflow
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
+2. Create a feature branch: \`git checkout -b feature-name\`
 3. Make your changes
-4. Run tests: `npm run test`
-5. Validate configuration: `npm run config:validate`
-6. Type check: `npm run type-check`
-7. Commit changes: `npm run commit`
+4. Run tests: \`npm run test\`
+5. Validate configuration: \`npm run config:validate\`
+6. Type check: \`npm run type-check\`
+7. Commit changes: \`npm run commit\`
 8. Push to your fork
 9. Create a Pull Request
 
@@ -415,4 +454,80 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-*Generated for PRODUCTION environment* | *Configuration: https://kodepos-api.tekipik.workers.dev* | *Worker: kodepos-worker*
+*Generated for ${environment.toUpperCase()} environment* | *Configuration: ${config.apiUrl}* | *Worker: ${config.workerName}*
+`;
+
+  return template;
+}
+
+function updateReadme() {
+  const readmePath = path.join(__dirname, '..', 'README.md');
+  const readmeTemplate = generateReadme();
+
+  fs.writeFileSync(readmePath, readmeTemplate);
+  console.log(`✅ README.md updated for ${environment} environment`);
+  console.log(`📋 API URL: ${config.apiUrl}`);
+  console.log(`🏷️  Worker Name: ${config.workerName}`);
+}
+
+function updatePackageJson() {
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+  // Update homepage based on environment
+  packageJson.homepage = config.apiUrl;
+
+  // Update repository URL if needed
+  if (environment === 'production') {
+    packageJson.repository.url = 'https://github.com/mxwllalpha/kodepos-worker.git';
+    packageJson.bugs.url = 'https://github.com/mxwllalpha/kodepos-worker/issues';
+  }
+
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  console.log(`✅ package.json updated for ${environment} environment`);
+}
+
+function showHelp() {
+  console.log('📖 Kodepos Worker Documentation Generator');
+  console.log('');
+  console.log('Usage:');
+  console.log('  node scripts/generate-docs.js');
+  console.log('  ENVIRONMENT=production node scripts/generate-docs.js');
+  console.log('  ENVIRONMENT=staging node scripts/generate-docs.js');
+  console.log('');
+  console.log('Environments:');
+  console.log('  - development (default)');
+  console.log('  - staging');
+  console.log('  - production');
+  console.log('');
+  console.log('What it does:');
+  console.log('  - Updates README.md with environment-specific URLs');
+  console.log('  - Updates package.json homepage');
+  console.log('  - Generates API examples with correct URLs');
+  console.log('  - Maintains documentation consistency');
+}
+
+// Handle command line arguments
+const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  showHelp();
+  process.exit(0);
+}
+
+// Generate documentation
+console.log(`📖 Generating documentation for ${environment.toUpperCase()} environment...`);
+
+try {
+  updateReadme();
+  updatePackageJson();
+
+  console.log('');
+  console.log('✅ Documentation generation complete!');
+  console.log(`🌐 Environment: ${environment.toUpperCase()}`);
+  console.log(`🔗 API URL: ${config.apiUrl}`);
+  console.log(`🏷️  Worker: ${config.workerName}`);
+
+} catch (error) {
+  console.error('❌ Documentation generation failed:', error.message);
+  process.exit(1);
+}

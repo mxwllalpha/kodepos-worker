@@ -34,16 +34,25 @@
     "db:info": "wrangler d1 info kodepos-db --json",
     "db:info:staging": "wrangler d1 info kodepos-db-staging --json",
     "import:data": "node scripts/import-postal-data.js",
-    "health": "curl -f https://kodepos-api.tekipik.workers.dev/health || echo 'Health check failed'",
-    "health:staging": "curl -f https://kodepos-worker-staging.tekipik.workers.dev/health || echo 'Staging health check failed'",
+    "health:prod": "KODEPOS_API_URL=https://kodepos-api.tekipik.workers.dev curl -f $KODEPOS_API_URL/health || echo 'Production health check failed'",
+    "health:staging": "KODEPOS_API_URL=https://kodepos-worker-staging.tekipik.workers.dev curl -f $KODEPOS_API_URL/health || echo 'Staging health check failed'",
+    "health:dev": "KODEPOS_API_URL=http://localhost:8787 curl -f $KODEPOS_API_URL/health || echo 'Dev health check failed'",
+    "health": "npm run health:prod",
+    "config:validate": "node scripts/validate-config.js",
+    "config:validate:all": "node scripts/validate-config.js --all-env",
+    "config:setup:prod": "ENVIRONMENT=production node scripts/setup-environment.js",
+    "config:setup:staging": "ENVIRONMENT=staging node scripts/setup-environment.js",
+    "config:setup:dev": "ENVIRONMENT=development node scripts/setup-environment.js",
+    "docs:generate": "node scripts/generate-docs.js",
+    "docs:check-consistency": "node scripts/validate-docs.js",
     "local": "npm run dev",
     "preview": "wrangler dev --env staging",
     "start": "npm run deploy",
     "prepare": "husky install",
-    "precommit": "lint-staged",
+    "precommit": "npm run type-check && npm run lint:check && npm run config:validate && lint-staged",
     "commit": "git-cz",
     "release": "semantic-release",
-    "setup:local": "cp .env.example .env && npm install && npm run db:setup:dev"
+    "setup:local": "cp .env.example .env && npm install && npm run config:setup:dev && npm run db:setup:dev"
   },
   "keywords": [
     "indonesia",
@@ -79,6 +88,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231203.0",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
@@ -121,8 +131,8 @@
     ]
   },
   "volta": {
-    "node": "18.19.0",
-    "npm": "10.2.3"
+    "node": "20.15.0",
+    "npm": "10.7.0"
   },
   "funding": {
     "type": "github",
