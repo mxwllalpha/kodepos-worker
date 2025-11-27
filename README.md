@@ -1,8 +1,12 @@
-# Kodepos API Indonesia
+# 🚀 Kodepos API Indonesia - Automated Deployment
 
 <div align="center">
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mxwllalpha/kodepos-api)
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/mxwllalpha/kodepos-worker">
+  <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+</a>
+
+[![Workflow Status](https://github.com/mxwllalpha/kodepos-worker/actions/workflows/deploy.yml/badge.svg)](https://github.com/mxwllalpha/kodepos-worker/actions)
 [![Built with Cloudflare](https://workers.cloudflare.com/built-with-cloudflare.svg)](https://cloudflare.com)
 
 ![Kodepos API](https://img.shields.io/badge/Version-1.0.0-blue.svg)
@@ -12,7 +16,7 @@
 
 **Lightning-fast Indonesian postal code API with 83,761 complete records**
 
-[🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🔧 API Reference](#-api-reference) • [💻 Examples](#-examples) • [🤝 Contributing](CONTRIBUTING.md)
+[🚀 Quick Deploy](#-one-click-deployment-recommended) • [📖 Documentation](#-documentation) • [🔧 API Reference](#-api-reference) • [💻 Examples](#-examples) • [🤝 Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -26,6 +30,7 @@
 - 📚 **Developer Friendly**: RESTful API with comprehensive documentation
 - 🆓 **Free Usage**: Generous free tier with no API keys required
 - 🌍 **Global CDN**: Deployed on Cloudflare's global network
+- 🚀 **Zero-Touch Deployment**: One-click deployment with automated database setup
 
 ## 📊 Data Coverage
 
@@ -39,48 +44,108 @@
 | **Coordinates** | 100% |
 | **Data Quality** | High |
 
-## 🚀 Quick Start
+## 🚀 One-Click Deployment (Recommended)
 
-### 🚀 One-Click Deployment (Recommended)
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/mxwllalpha/kodepos-worker">
+  <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+</a>
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mxwllalpha/kodepos-api)
+**Zero Manual Setup Required!** 🎉
 
-Click the button above to deploy automatically to Cloudflare Workers with:
-- ✅ Auto-provisioned D1 database
-- ✅ Automated data import (83,761 postal codes)
-- ✅ Global CDN deployment
-- ✅ Production-ready configuration
+Click the "Deploy to Cloudflare" button above for:
+- ✅ **Automatic D1 database creation** (kodepos-db)
+- ✅ **Automated migrations** (all tables, indexes, and 83,761 records)
+- ✅ **Environment setup** (production + staging)
+- ✅ **Global CDN deployment** on 200+ edge locations
+- ✅ **Production-ready configuration** with rate limiting and caching
+- ✅ **Health checks** and monitoring
+- ✅ **Zero-touch deployment** from GitHub to production
 
-### Manual Installation
+### 🔄 Automatic Workflow Features
+
+The GitHub Actions workflow handles:
+1. **Database Creation**: Creates `kodepos-db` and `kodepos-db-staging`
+2. **Migration Application**: Applies all SQL migrations in order
+3. **Configuration Update**: Updates `wrangler.toml` with actual database IDs
+4. **Deployment**: Deploys to production and staging environments
+5. **Health Checks**: Verifies deployment and API functionality
+6. **Environment Management**: Separate production and staging databases
+
+### 🌐 Deployment URLs
+
+After deployment, your API will be available at:
+- **Production**: https://kodepos-api.tekipik.workers.dev
+- **Staging**: https://kodepos-worker-staging.tekipik.workers.dev
+- **GitHub Actions**: https://github.com/mxwllalpha/kodepos-worker/actions
+
+### ⚙️ Environment Configuration
+
+The deployment automatically configures three environments:
+
+| Environment | Worker Name | Database | URL |
+|-------------|--------------|----------|-----|
+| **Production** | `kodepos-api` | `kodepos-db` | https://kodepos-api.tekipik.workers.dev |
+| **Staging** | `kodepos-worker-staging` | `kodepos-db-staging` | https://kodepos-worker-staging.tekipik.workers.dev |
+| **Development** | `kodepos-worker-dev` | `kodepos-db-dev` | Local development |
+
+## 🛠️ Manual Installation (Alternative)
+
+If you prefer manual setup instead of one-click deployment:
 
 ```bash
 # Clone the repository
-git clone https://github.com/mxwllalpha/kodepos-api.git
-cd kodepos-api
+git clone https://github.com/mxwllalpha/kodepos-worker.git
+cd kodepos-worker
 
 # Install dependencies
 npm install
 
-# Set up D1 database
-npx wrangler d1 create kodepos-db
+# Setup Cloudflare authentication
+npx wrangler auth login
+
+# Create D1 databases
+npx wrangler d1 create kodepos-db --environment=production
+npx wrangler d1 create kodepos-db-staging --environment=staging
 
 # Apply database migrations
 npx wrangler d1 migrations apply kodepos-db --remote
+npx wrangler d1 migrations apply kodepos-db-staging --remote --environment=staging
 
 # Import postal code data
 npm run import:data
 
 # Deploy to Cloudflare Workers
-npm run deploy
+npm run deploy --env production
+npm run deploy --env staging
 ```
 
-### Usage Examples
+### ⚙️ Setup Requirements for Manual Installation
 
-#### Search by Postal Code
+**Required Secrets for GitHub Actions:**
+1. `CLOUDFLARE_API_TOKEN`: API token with Workers and D1 permissions
+2. `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
+
+**Create API Token:**
+1. Go to [Cloudflare Dashboard → API Tokens](https://dash.cloudflare.com/profile/api-tokens)
+2. Click "Create Token" → "Custom token"
+3. Permissions:
+   - Account: `Cloudflare D1:Edit`
+   - Account: `Zone:Read`
+   - Account: `Account Settings:Read`
+4. Account Resources: `All accounts` (or specific account)
+5. Continue → Create token
+
+**Find Account ID:**
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Right sidebar → "Account ID" will be displayed
+
+## 💻 Usage Examples
+
+### Search by Postal Code
 
 ```javascript
 // Find postal code 12345
-const response = await fetch('https://kodepos-api.mxwllalpha.workers.dev/api/v1/code/12345');
+const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/code/12345');
 const data = await response.json();
 
 console.log(data);
@@ -98,30 +163,30 @@ console.log(data);
 // }
 ```
 
-#### Search by Location Name
+### Search by Location Name
 
 ```javascript
 // Search for locations named "Jakarta"
-const response = await fetch('https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q=Jakarta&limit=10');
+const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/search?q=Jakarta&limit=10');
 const data = await response.json();
 ```
 
-#### Find Nearby Locations
+### Find Nearby Locations
 
 ```javascript
 // Find locations within 5km of coordinates
-const response = await fetch('https://kodepos-api.mxwllalpha.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5');
+const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5');
 const data = await response.json();
 ```
 
-#### List Administrative Areas
+### List Administrative Areas
 
 ```javascript
 // Get all provinces
-const provinces = await fetch('https://kodepos-api.mxwllalpha.workers.dev/api/v1/provinces');
+const provinces = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/provinces');
 
 // Get regencies in a province
-const regencies = await fetch('https://kodepos-api.mxwllalpha.workers.dev/api/v1/regencies/DKI%20Jakarta');
+const regencies = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/regencies/DKI%20Jakarta');
 ```
 
 ## 📖 Documentation
@@ -173,10 +238,10 @@ interface ApiResponse<T> {
 
 ## 🔧 API Reference
 
-### Base URL
-```
-https://kodepos-api.mxwllalpha.workers.dev
-```
+### Base URLs
+
+- **Production**: `https://kodepos-api.tekipik.workers.dev`
+- **Staging**: `https://kodepos-worker-staging.tekipik.workers.dev`
 
 ### Health Checks
 
@@ -188,7 +253,8 @@ Basic health check endpoint.
 {
   "status": "healthy",
   "timestamp": "2025-11-26T10:00:00.000Z",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "environment": "production"
 }
 ```
 
@@ -259,73 +325,7 @@ List all villages in a district.
 **Parameters:**
 - `district` (string, required): District name (URL encoded)
 
-## 💻 Examples
-
-### JavaScript/Node.js
-
-```javascript
-// Simple search function
-async function searchPostalCode(query) {
-  const response = await fetch(
-    `https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q=${encodeURIComponent(query)}`
-  );
-  return await response.json();
-}
-
-// Usage
-const results = await searchPostalCode('Jakarta Pusat');
-console.log(results.data);
-```
-
-### Python
-
-```python
-import requests
-import json
-
-def search_postal_code(query):
-    url = f"https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q={query}"
-    response = requests.get(url)
-    return response.json()
-
-# Usage
-results = search_postal_code('Surabaya')
-print(json.dumps(results, indent=2))
-```
-
-### PHP
-
-```php
-<?php
-function searchPostalCode($query) {
-    $url = "https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q=" . urlencode($query);
-    $response = file_get_contents($url);
-    return json_decode($response, true);
-}
-
-// Usage
-$results = searchPostalCode('Bandung');
-print_r($results);
-?>
-```
-
-### cURL
-
-```bash
-# Search by postal code
-curl -X GET "https://kodepos-api.mxwllalpha.workers.dev/api/v1/code/12345"
-
-# Search by name
-curl -X GET "https://kodepos-api.mxwllalpha.workers.dev/api/v1/search?q=Jakarta"
-
-# Find nearby locations
-curl -X GET "https://kodepos-api.mxwllalpha.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5"
-
-# Get all provinces
-curl -X GET "https://kodepos-api.mxwllalpha.workers.dev/api/v1/provinces"
-```
-
-## 🛠️ Development
+## 🚀 Development
 
 ### Prerequisites
 
@@ -429,6 +429,18 @@ npx wrangler d1 execute kodepos-db --command="DELETE FROM postal_codes"
 - Rate limiting and caching
 - Full TypeScript support
 - Production deployment
+- Automated GitHub Actions workflow
+- One-click deployment with zero manual setup
+- Environment management (production/staging/development)
+- Automatic database creation and migrations
+- Health checks and monitoring
+
+### 📝 Future Roadmap
+
+- [ ] **v1.1.0**: Additional administrative endpoints
+- [ ] **v1.2.0**: Advanced search filters
+- [ ] **v1.3.0**: Usage analytics dashboard
+- [ ] **v2.0.0**: GraphQL API support
 
 ## 🤝 Contributing
 
@@ -442,20 +454,29 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+### Automated Checks
+
+- TypeScript compilation
+- ESLint code quality
+- Prettier formatting
+- Unit tests
+- Integration tests
+- Build verification
+
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- Indonesian Postal Service for the reference data
-- Cloudflare for the excellent Workers platform
+- Indonesian Postal Service for reference data
+- Cloudflare for excellent Workers platform
 - All contributors who help improve this API
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/mxwllalpha/kodepos-api/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/mxwllalpha/kodepos-api/discussions)
+- **Issues**: [GitHub Issues](https://github.com/mxwllalpha/kodepos-worker/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mxwllalpha/kodepos-worker/discussions)
 - **Email**: mxwllalpha@gmail.com
 
 ## 🔗 Related Projects
@@ -468,7 +489,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**[⭐ Star this repo](https://github.com/mxwllalpha/kodepos-api) if it helped you!**
+**[⭐ Star this repo](https://github.com/mxwllalpha/kodepos-worker) if it helped you!**
 
 Made with ❤️ for Indonesian developers
 

@@ -1,24 +1,35 @@
 # Kodepos API Indonesia - Cloudflare Workers Configuration
 # High-performance Indonesian postal code API with 83,761 records
 # Author: Maxwell Alpha - https://github.com/mxwllalpha - mxwllalpha@gmail.com
+# Automated Deployment with GitHub Actions + D1 Database Auto-Creation
 
 name = "kodepos-worker"
 main = "src/index.ts"
 compatibility_date = "2024-11-03"
 compatibility_flags = ["nodejs_compat_v2"]
 
-# Auto-provisioned D1 Database for postal code data
-# This database will be automatically created during deployment
-# [[d1_databases]]
-# binding = "KODEPOS_DB"
-# database_name = "kodepos-db"
-# database_id will be auto-assigned by Cloudflare during deployment
-
-# Environment Variables
+# Environment Variables (Global defaults)
 [vars]
-ENVIRONMENT = "production"
+ENVIRONMENT = "development"
 API_VERSION = "v1"
 DATA_SOURCE_VERSION = "2025-11-26"
+CORS_ORIGIN = "*"
+RATE_LIMIT_REQUESTS = "100"
+RATE_LIMIT_WINDOW = "60"
+
+# Development Environment (local)
+[env.development]
+name = "kodepos-worker-dev"
+
+[[env.development.d1_databases]]
+binding = "KODEPOS_DB"
+database_name = "kodepos-db-dev"
+database_id = "local-development-db"
+preview_database_id = "kodepos-db-local"
+
+[env.development.vars]
+ENVIRONMENT = "development"
+DEBUG = "true"
 
 # Staging Environment for testing
 [env.staging]
@@ -27,10 +38,12 @@ name = "kodepos-worker-staging"
 [[env.staging.d1_databases]]
 binding = "KODEPOS_DB"
 database_name = "kodepos-db-staging"
-# database_id will be auto-assigned by Cloudflare during deployment
+database_id = "AUTO-CREATED-BY-GITHUB-ACTIONS"
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
+DEBUG = "true"
+CORS_ORIGIN = "https://kodepos-worker-staging.tekipik.workers.dev"
 
 # Production Environment
 [env.production]
@@ -39,15 +52,32 @@ name = "kodepos-api"
 [[env.production.d1_databases]]
 binding = "KODEPOS_DB"
 database_name = "kodepos-db"
-# database_id will be auto-assigned by Cloudflare during deployment
+database_id = "AUTO-CREATED-BY-GITHUB-ACTIONS"
 
 [env.production.vars]
 ENVIRONMENT = "production"
+DEBUG = "false"
+CORS_ORIGIN = "https://api.megawe.net"
 
 # Build Configuration
 [build]
+command = "npm run build"
 watch_dir = "src"
 
-# Observability
+# Observability and Monitoring
 [observability]
 enabled = true
+
+# Triggers (for automated jobs)
+[triggers]
+crons = ["0 2 * * *"]  # Daily at 2 AM UTC for database maintenance
+
+# Limits and Constraints
+[limits]
+cpu_ms = 50000  # 50 seconds CPU time
+
+# KV Namespace for caching (optional - uncomment if needed)
+# [[kv_namespaces]]
+# binding = "KODEPOS_CACHE"
+# id = "kodepos-cache"
+# preview_id = "kodepos-cache-preview"

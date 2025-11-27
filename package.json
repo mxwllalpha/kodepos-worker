@@ -1,45 +1,131 @@
 {
   "name": "kodepos-worker",
   "version": "1.0.0",
-  "description": "Indonesian Postal Code API Worker - High performance postal code lookup service",
+  "description": "Lightning-fast Indonesian postal code API with 83,761 complete records",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --env development",
+    "dev:staging": "wrangler dev --env staging",
+    "dev:production": "wrangler dev --env production",
+    "deploy": "wrangler deploy --env production",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:development": "wrangler deploy --env development",
+    "deploy:all": "npm run deploy:staging && npm run deploy",
     "build": "tsc --noEmit",
-    "lint": "eslint src --ext .ts",
+    "build:check": "tsc",
+    "lint": "eslint src --ext .ts,.js --fix",
+    "lint:check": "eslint src --ext .ts,.js",
+    "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",
     "type-check": "tsc --noEmit",
-    "import:data": "node scripts/import-data.js"
-  },
-  "dependencies": {
-    "hono": "^4.6.9"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241022.0",
-    "@types/node": "^22.9.0",
-    "typescript": "^5.6.3",
-    "wrangler": "^3.94.0"
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "db:create": "node scripts/setup-database.js production",
+    "db:create:staging": "node scripts/setup-database.js staging",
+    "db:create:dev": "node scripts/setup-database.js development",
+    "db:migrate": "bash scripts/migrate.sh production",
+    "db:migrate:staging": "bash scripts/migrate.sh staging",
+    "db:migrate:dev": "bash scripts/migrate.sh development",
+    "db:setup": "npm run db:create && npm run db:migrate",
+    "db:setup:staging": "npm run db:create:staging && npm run db:migrate:staging",
+    "db:setup:dev": "npm run db:create:dev && npm run db:migrate:dev",
+    "db:info": "wrangler d1 info kodepos-db --json",
+    "db:info:staging": "wrangler d1 info kodepos-db-staging --json",
+    "import:data": "node scripts/import-postal-data.js",
+    "health": "curl -f https://kodepos-api.tekipik.workers.dev/health || echo 'Health check failed'",
+    "health:staging": "curl -f https://kodepos-worker-staging.tekipik.workers.dev/health || echo 'Staging health check failed'",
+    "local": "npm run dev",
+    "preview": "wrangler dev --env staging",
+    "start": "npm run deploy",
+    "prepare": "husky install",
+    "precommit": "lint-staged",
+    "commit": "git-cz",
+    "release": "semantic-release",
+    "setup:local": "cp .env.example .env && npm install && npm run db:setup:dev"
   },
   "keywords": [
     "indonesia",
     "postal-code",
-    "kodepos",
     "api",
-    "cloudflare-workers"
+    "cloudflare-workers",
+    "d1-database",
+    "typescript",
+    "rest-api",
+    "geolocation",
+    "indonesian-data",
+    "kodepos"
   ],
-  "author": "Maxwell Alpha - https://github.com/mxwllalpha - mxwllalpha@gmail.com",
+  "author": {
+    "name": "Maxwell Alpha",
+    "email": "mxwllalpha@gmail.com",
+    "url": "https://github.com/mxwllalpha"
+  },
   "license": "MIT",
-  "cloudflare": {
-    "bindings": {
-      "KODEPOS_DB": {
-        "description": "D1 database for Indonesian postal codes",
-        "type": "d1"
-      }
-    },
-    "compatibility_flags": ["nodejs_compat_v2"],
-    "triggers": {
-      "crons": []
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mxwllalpha/kodepos-worker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mxwllalpha/kodepos-worker/issues"
+  },
+  "homepage": "https://kodepos-api.tekipik.workers.dev",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "hono": "^4.6.9",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "commitizen": "^4.3.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.0",
+    "semantic-release": "^22.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "wrangler": "^3.22.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
     }
+  },
+  "release": {
+    "branches": [
+      "main",
+      "master"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
+  },
+  "volta": {
+    "node": "18.19.0",
+    "npm": "10.2.3"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/mxwllalpha"
   }
 }
