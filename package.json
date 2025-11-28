@@ -92,17 +92,17 @@
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
-    "commitizen": "^4.3.0",
+    "commitizen": "^4.3.1",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.0",
-    "semantic-release": "^22.0.0",
+    "semantic-release": "^25.0.2",
     "typescript": "^5.3.0",
-    "vitest": "^1.0.0",
-    "vitest-environment-miniflare": "^2.14.4",
-    "wrangler": "^3.22.0"
+    "vitest": "^4.0.14",
+    "vitest-environment-miniflare": "^0.0.1",
+    "wrangler": "^4.51.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
