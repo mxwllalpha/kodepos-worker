@@ -3,7 +3,7 @@
  * Provides unified configuration management across all environments
  *
  * @author Maxwell Alpha
- * @website https://github.com/mxwlllph
+ * @website https://github.com/mxwllalpha
  */
 
 import type { Env } from '../types/kodepos';

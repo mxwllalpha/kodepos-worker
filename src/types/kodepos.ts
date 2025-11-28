@@ -3,7 +3,7 @@
  * Type definitions for Indonesian postal code data
  *
  * @author Maxwell Alpha
- * @website https://github.com/mxwlllph
+ * @website https://github.com/mxwllalpha
  */
 
 import type { D1Database } from '@cloudflare/workers-types';

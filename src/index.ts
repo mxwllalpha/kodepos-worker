@@ -3,7 +3,7 @@
  * High-performance postal code lookup service with global edge distribution
  *
  * @author Maxwell Alpha
- * @website https://github.com/mxwlllph
+ * @website https://github.com/mxwllalpha
  */
 
 import { Hono } from 'hono';
