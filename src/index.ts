@@ -13,7 +13,7 @@ import { prettyJSON } from 'hono/pretty-json';
 
 import { KodeposService } from './services/kodepos.service';
 import { transformToLegacyFormat, createLegacyResponse, createLegacyErrorResponse, createLegacyNotFoundResponse, createLegacyServerErrorResponse, validateSearchQuery, transformToLegacyDetectFormat, validateCoordinates } from './services/legacy-adapter.service';
-import { ConfigurationService } from './services/configuration.service';
+import importRoutes from './routes/import';
 import type { Env, ApiResponse, HealthCheckResponse } from './types/kodepos';
 
 // Create Hono app
@@ -36,7 +36,7 @@ app.use('*', cors({
 /**
  * Helper function to create standardized API responses
  */
-function createApiResponse<T = any>(
+function createApiResponse<T = unknown>(
   success: boolean,
   data?: T,
   error?: string,
@@ -318,7 +318,10 @@ app.get('/detect', async (c) => {
       return c.json(errorResponse, 400);
     }
 
-    const result = await kodeposService.detectLocation(validation.latitude!, validation.longitude!);
+    const result = await kodeposService.detectLocation(
+      validation.latitude || 0,
+      validation.longitude || 0
+    );
 
     if (result.success && result.data) {
       // Transform data to legacy detect format using the adapter service
@@ -359,7 +362,7 @@ app.get('/search', async (c) => {
       return c.json(errorResponse, 400);
     }
 
-    const result = await kodeposService.search({ search: validation.query! });
+    const result = await kodeposService.search({ search: validation.query });
 
     if (result.success && result.data) {
       // Transform data to legacy format
@@ -376,6 +379,11 @@ app.get('/search', async (c) => {
     return c.json(errorResponse, 500);
   }
 });
+
+/**
+ * Mount import routes
+ */
+app.route('/api/v1/import', importRoutes);
 
 /**
  * Root endpoint
@@ -398,7 +406,17 @@ app.get('/', (c) => {
         nearby: '/api/v1/nearby',
         provinces: '/api/v1/provinces',
         cities: '/api/v1/cities/:province',
-        stats: '/api/v1/stats'
+        stats: '/api/v1/stats',
+        import: {
+          upload: '/api/v1/import/upload',
+          status: '/api/v1/import/status/:jobId',
+          history: '/api/v1/import/history',
+          validate: '/api/v1/import/validate',
+          cancel: '/api/v1/import/cancel/:jobId',
+          statistics: '/api/v1/import/statistics',
+          config: '/api/v1/import/config',
+          templates: '/api/v1/import/templates'
+        }
       },
       legacy: {
         search: '/search', // Compatible with https://kodepos.vercel.app/search
@@ -412,6 +430,7 @@ app.get('/', (c) => {
       'Built-in caching for performance',
       'Global edge distribution',
       'Legacy API compatibility',
+      'Database import functionality',
       'High availability and performance'
     ],
     status: 'operational',
@@ -435,6 +454,16 @@ app.notFound((c) => {
       provinces: '/api/v1/provinces',
       cities: '/api/v1/cities/:province',
       stats: '/api/v1/stats',
+      import: {
+        upload: '/api/v1/import/upload',
+        status: '/api/v1/import/status/:jobId',
+        history: '/api/v1/import/history',
+        validate: '/api/v1/import/validate',
+        cancel: '/api/v1/import/cancel/:jobId',
+        statistics: '/api/v1/import/statistics',
+        config: '/api/v1/import/config',
+        templates: '/api/v1/import/templates'
+      },
       legacy: {
         search: '/search',
         detect: '/detect'
