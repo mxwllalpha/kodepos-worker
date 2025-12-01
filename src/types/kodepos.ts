@@ -9,7 +9,7 @@
 import type { D1Database } from '@cloudflare/workers-types';
 
 export interface KodeposData {
-  id: number;
+  id?: number;
   code: number;
   village: string;
   district: string;
@@ -20,6 +20,10 @@ export interface KodeposData {
   elevation?: number;
   timezone?: string;
   created_at?: string;
+}
+
+export interface KodeposDataWithDistance extends KodeposData {
+  distance_km?: number;
 }
 
 export interface LocationQuery {
@@ -48,24 +52,13 @@ export interface KodeposResponse {
 
 export interface DetectLocationResponse {
   success: boolean;
-  data?: {
-    province: string;
-    regency: string;
-    district: string;
-    village: string;
-    code: string;
-    latitude: number;
-    longitude: number;
-    elevation?: number;
-    timezone?: string;
-    distance_km?: number;
-  };
+  data?: KodeposDataWithDistance;
   message?: string;
   query_time_ms?: number;
   cached?: boolean;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

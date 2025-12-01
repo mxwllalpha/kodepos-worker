@@ -50,7 +50,7 @@ export class ConfigurationService {
       DATABASE_NAME: env.DATABASE_NAME || envConfig.DATABASE_NAME,
       ENVIRONMENT: environment as KodeposEnvironment['ENVIRONMENT'],
       VERSION: env.API_VERSION || '1.0.0',
-      LOG_LEVEL: (env.LOG_LEVEL as any) || 'info'
+      LOG_LEVEL: (env.LOG_LEVEL as 'error' | 'warn' | 'info' | 'debug') || 'info'
     };
   }
 

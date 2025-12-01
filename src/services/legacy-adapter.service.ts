@@ -7,7 +7,7 @@
  * @email mxwllalpha@gmail.com
  */
 
-import type { KodeposData } from '../types/kodepos';
+import type { KodeposData, KodeposDataWithDistance } from '../types/kodepos';
 
 export interface LegacyPostalCode {
   code: string;
@@ -21,7 +21,7 @@ export interface LegacyPostalCode {
   timezone: string;
 }
 
-export interface LegacyApiResponse<T = any> {
+export interface LegacyApiResponse<T = unknown> {
   statusCode: number;
   code: string;
   data: T;
@@ -65,7 +65,7 @@ export function transformToLegacyFormat(data: KodeposData | KodeposData[]): Lega
 /**
  * Transform modern data to legacy detect format
  */
-export function transformToLegacyDetectFormat(item: any, distance?: number): LegacyDetectResponse['data'] {
+export function transformToLegacyDetectFormat(item: KodeposDataWithDistance, distance?: number): LegacyDetectResponse['data'] {
   return {
     code: item.code || 0,
     village: item.village || '',
@@ -105,22 +105,28 @@ export function createLegacyErrorResponse<T>(message: string, statusCode: number
 /**
  * Create not found legacy API response
  */
-export function createLegacyNotFoundResponse(message: string = 'Not found'): LegacyApiResponse<any> {
+export function createLegacyNotFoundResponse(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _message: string = 'Not found'
+): LegacyApiResponse<null> {
   return {
     statusCode: 404,
     code: 'NOT_FOUND',
-    data: []
+    data: null
   };
 }
 
 /**
  * Create server error legacy API response
  */
-export function createLegacyServerErrorResponse(message: string = 'Internal server error'): LegacyApiResponse<any> {
+export function createLegacyServerErrorResponse(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _message: string = 'Internal server error'
+): LegacyApiResponse<null> {
   return {
     statusCode: 500,
     code: 'SERVER_ERROR',
-    data: []
+    data: null
   };
 }
 

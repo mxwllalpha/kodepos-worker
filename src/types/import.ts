@@ -21,7 +21,7 @@ export interface ImportConfiguration {
   validate_coordinates: boolean;
   skip_invalid_records: boolean;
   notification_email?: string;
-  custom_validation_rules?: Record<string, any>;
+  custom_validation_rules?: Record<string, unknown>;
 }
 
 /**
@@ -120,7 +120,7 @@ export interface ImportJobListResponse {
  * Import validation request
  */
 export interface ImportValidationRequest {
-  data: Record<string, any>[];
+  data: Record<string, string | number | boolean>[];
   configuration: Partial<ImportConfiguration>;
 }
 
@@ -162,7 +162,7 @@ export interface ImportFileValidation {
   content_type: ContentType;
   total_records: number;
   has_required_headers: boolean;
-  sample_records: Record<string, any>[];
+  sample_records: Record<string, string | number | boolean>[];
   validation_errors: string[];
 }
 
@@ -226,7 +226,7 @@ export interface ImportError {
   message: string;
   field?: string;
   row_number?: number;
-  record_data?: Record<string, any>;
+  record_data?: Record<string, string | number | boolean>;
   severity: ValidationSeverity;
 }
 

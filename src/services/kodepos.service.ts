@@ -8,7 +8,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types';
-import type { KodeposData, LocationQuery, CoordinateQuery, KodeposResponse, DetectLocationResponse } from '../types/kodepos';
+import type { KodeposData, LocationQuery, KodeposResponse, DetectLocationResponse } from '../types/kodepos';
 
 export class KodeposService {
   private db: D1Database;
@@ -25,7 +25,7 @@ export class KodeposService {
 
     try {
       let sql = 'SELECT * FROM postal_codes WHERE 1=1';
-      const params: any[] = [];
+      const params: (string | number | boolean)[] = [];
 
       // Build dynamic query
       if (query.code) {
@@ -93,7 +93,7 @@ export class KodeposService {
       if (cachedResult) {
         return {
           success: true,
-          data: cachedResult,
+          data: { ...JSON.parse(cachedResult), code: Number(JSON.parse(cachedResult).code) },
           query_time_ms: Date.now() - startTime,
           cached: true
         };
@@ -131,7 +131,7 @@ export class KodeposService {
         regency: result.regency as string,
         district: result.district as string,
         village: result.village as string,
-        code: (result.code as number).toString(),
+        code: result.code as number,
         latitude: result.latitude as number,
         longitude: result.longitude as number,
         elevation: result.elevation as number,
@@ -140,7 +140,7 @@ export class KodeposService {
       };
 
       // Cache the result for 24 hours
-      await this.saveLocationCache(cacheKey, locationData, 24);
+      await this.saveLocationCache(cacheKey, JSON.stringify(locationData), 24);
 
       return {
         success: true,
@@ -171,7 +171,7 @@ export class KodeposService {
       if (cachedResult) {
         return {
           success: true,
-          data: cachedResult,
+          data: { ...JSON.parse(cachedResult), code: Number(JSON.parse(cachedResult).code) },
           query_time_ms: Date.now() - startTime,
           cached: true
         };
@@ -200,7 +200,7 @@ export class KodeposService {
 
       // Cache for 6 hours
       if (result.results && result.results.length > 0) {
-        await this.saveLocationCache(cacheKey, result.results, 6);
+        await this.saveLocationCache(cacheKey, JSON.stringify(result.results), 6);
       }
 
       return {
@@ -318,11 +318,11 @@ export class KodeposService {
       ]);
 
       return {
-        total_records: (totalResult as any)?.count || 0,
-        provinces: (provinceResult as any)?.count || 0,
-        cities: (cityResult as any)?.count || 0,
-        districts: (districtResult as any)?.count || 0,
-        villages: (villageResult as any)?.count || 0
+        total_records: (totalResult as { count?: number })?.count || 0,
+        provinces: (provinceResult as { count?: number })?.count || 0,
+        cities: (cityResult as { count?: number })?.count || 0,
+        districts: (districtResult as { count?: number })?.count || 0,
+        villages: (villageResult as { count?: number })?.count || 0
       };
     } catch (error) {
       console.error('Error getting stats:', error);
@@ -333,7 +333,7 @@ export class KodeposService {
   /**
    * Cache management methods
    */
-  private async getLocationCache(cacheKey: string): Promise<any> {
+  private async getLocationCache(cacheKey: string): Promise<string | null> {
     try {
       const result = await this.db.prepare(`
         SELECT result_data FROM location_cache
@@ -346,7 +346,7 @@ export class KodeposService {
     }
   }
 
-  private async saveLocationCache(cacheKey: string, data: any, hoursToExpire: number): Promise<void> {
+  private async saveLocationCache(cacheKey: string, data: string, hoursToExpire: number): Promise<void> {
     try {
       const expiresAt = new Date(Date.now() + hoursToExpire * 60 * 60 * 1000)
         .toISOString().slice(0, 19).replace('T', ' ');

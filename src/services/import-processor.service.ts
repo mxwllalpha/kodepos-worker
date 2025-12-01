@@ -26,7 +26,6 @@ export class ImportProcessorService {
     for (const record of records) {
       try {
         const kodeposData: KodeposData = {
-          id: Date.now() + Math.floor(Math.random() * 1000), // Generate numeric ID
           code: parseInt(this.extractPostalCode(record)),
           province: this.normalizeText(record.province || record.provinsi),
           regency: this.normalizeText(record.city || record.kota || record.regency),
@@ -65,9 +64,9 @@ export class ImportProcessorService {
     try {
       const batchSql = `
         INSERT INTO postal_codes (
-          id, code, province, regency, district, village,
+          code, province, regency, district, village,
           latitude, longitude, elevation, timezone
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       for (let i = 0; i < records.length; i += batchSize) {
@@ -92,7 +91,6 @@ export class ImportProcessorService {
 
             // Insert new record
             await this.db.prepare(batchSql).bind(
-              record.id,
               record.code.toString(),
               record.province,
               record.regency,

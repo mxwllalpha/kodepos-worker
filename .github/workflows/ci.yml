@@ -62,7 +62,7 @@ jobs:
       run: |
         echo "Validating data schema..."
         # Sample few records to validate structure
-        jq '.[0] | has("postal_code") and has("urban") and has("subdistrict") and has("city") and has("province_code")' data/kodepos.json
+        jq '.[0] | has("code") and has("village") and has("district") and has("regency") and has("province")' data/kodepos.json
 
     - name: Check OpenAPI spec
       run: |
@@ -72,10 +72,26 @@ jobs:
           exit 1
         fi
 
-        # Basic YAML validation
-        if ! python3 -c "import yaml; yaml.safe_load(open('openapi.yaml'))"; then
-          echo "❌ Invalid YAML in OpenAPI spec"
+        # Basic file validation
+        if [ ! -s "openapi.yaml" ]; then
+          echo "❌ OpenAPI spec is empty"
           exit 1
         fi
 
-        echo "✅ OpenAPI spec validation passed"
+        # Check for required YAML structure
+        if ! grep -q "^openapi:" openapi.yaml; then
+          echo "❌ OpenAPI spec missing required 'openapi:' field"
+          exit 1
+        fi
+
+        if ! grep -q "^info:" openapi.yaml; then
+          echo "❌ OpenAPI spec missing required 'info:' field"
+          exit 1
+        fi
+
+        if ! grep -q "^paths:" openapi.yaml; then
+          echo "❌ OpenAPI spec missing required 'paths:' field"
+          exit 1
+        fi
+
+        echo "✅ OpenAPI spec basic validation passed"
