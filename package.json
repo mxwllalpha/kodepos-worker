@@ -90,10 +90,10 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231203.0",
     "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "commitizen": "^4.3.1",
-    "eslint": "^8.54.0",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
