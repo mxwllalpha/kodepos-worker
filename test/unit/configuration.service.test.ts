@@ -57,7 +57,7 @@ describe('ConfigurationService', () => {
       const config = configService.getConfig();
 
       expect(config.ENVIRONMENT).toBe('production');
-      expect(config.API_BASE_URL).toBe('https://kodepos-api.tekipik.workers.dev');
+      expect(config.API_BASE_URL).toBe('https://kodepos-worker.tekipik.workers.dev');
       expect(config.WORKER_NAME).toBe('kodepos-worker');
       expect(config.DATABASE_NAME).toBe('kodepos-db');
       expect(config.VERSION).toBe('1.0.0');
@@ -148,11 +148,11 @@ describe('ConfigurationService', () => {
     });
 
     it('should get API base URL', () => {
-      expect(configService.getApiBaseUrl()).toBe('https://kodepos-api.tekipik.workers.dev');
+      expect(configService.getApiBaseUrl()).toBe('https://kodepos-worker.tekipik.workers.dev');
     });
 
     it('should get worker URL', () => {
-      expect(configService.getWorkerUrl()).toBe('https://kodepos-api.tekipik.workers.dev');
+      expect(configService.getWorkerUrl()).toBe('https://kodepos-worker.tekipik.workers.dev');
     });
 
     it('should get worker name', () => {
@@ -232,36 +232,36 @@ describe('ConfigurationService', () => {
     });
 
     it('should generate health check URL', () => {
-      expect(configService.getHealthCheckUrl()).toBe('https://kodepos-api.tekipik.workers.dev/health');
+      expect(configService.getHealthCheckUrl()).toBe('https://kodepos-worker.tekipik.workers.dev/health');
     });
 
     it('should generate detailed health check URL', () => {
-      expect(configService.getDetailedHealthCheckUrl()).toBe('https://kodepos-api.tekipik.workers.dev/health/detailed');
+      expect(configService.getDetailedHealthCheckUrl()).toBe('https://kodepos-worker.tekipik.workers.dev/health/detailed');
     });
 
     it('should generate API endpoint URL', () => {
-      expect(configService.getApiEndpoint('/api/v1/search')).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/search');
-      expect(configService.getApiEndpoint('api/v1/search')).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/search');
+      expect(configService.getApiEndpoint('/api/v1/search')).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/search');
+      expect(configService.getApiEndpoint('api/v1/search')).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/search');
     });
 
     it('should generate search endpoint URL', () => {
-      expect(configService.getSearchEndpoint()).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/search');
+      expect(configService.getSearchEndpoint()).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/search');
     });
 
     it('should generate detect endpoint URL', () => {
-      expect(configService.getDetectEndpoint()).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/detect');
+      expect(configService.getDetectEndpoint()).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/detect');
     });
 
     it('should generate nearby endpoint URL', () => {
-      expect(configService.getNearbyEndpoint()).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/nearby');
+      expect(configService.getNearbyEndpoint()).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/nearby');
     });
 
     it('should generate provinces endpoint URL', () => {
-      expect(configService.getProvincesEndpoint()).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/provinces');
+      expect(configService.getProvincesEndpoint()).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/provinces');
     });
 
     it('should generate stats endpoint URL', () => {
-      expect(configService.getStatsEndpoint()).toBe('https://kodepos-api.tekipik.workers.dev/api/v1/stats');
+      expect(configService.getStatsEndpoint()).toBe('https://kodepos-worker.tekipik.workers.dev/api/v1/stats');
     });
   });
 

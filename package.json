@@ -34,7 +34,7 @@
     "db:info": "wrangler d1 info kodepos-db --json",
     "db:info:staging": "wrangler d1 info kodepos-db-staging --json",
     "import:data": "node scripts/import-postal-data.js",
-    "health:prod": "KODEPOS_API_URL=https://kodepos-api.tekipik.workers.dev curl -f $KODEPOS_API_URL/health || echo 'Production health check failed'",
+    "health:prod": "KODEPOS_API_URL=https://kodepos-worker.tekipik.workers.dev curl -f $KODEPOS_API_URL/health || echo 'Production health check failed'",
     "health:staging": "KODEPOS_API_URL=https://kodepos-worker-staging.tekipik.workers.dev curl -f $KODEPOS_API_URL/health || echo 'Staging health check failed'",
     "health:dev": "KODEPOS_API_URL=http://localhost:8787 curl -f $KODEPOS_API_URL/health || echo 'Dev health check failed'",
     "health": "npm run health:prod",
@@ -79,7 +79,7 @@
   "bugs": {
     "url": "https://github.com/mxwllalpha/kodepos-worker/issues"
   },
-  "homepage": "https://kodepos-api.tekipik.workers.dev",
+  "homepage": "https://kodepos-worker.tekipik.workers.dev",
   "engines": {
     "node": ">=18.0.0"
   },

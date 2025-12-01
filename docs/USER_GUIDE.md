@@ -2543,7 +2543,7 @@ async function searchWithErrorHandling(query) {
 ### Getting Help
 
 1. **Documentation**: Check this guide and [API Documentation](./API.md)
-2. **GitHub Issues**: Report bugs at https://github.com/mxwllalpha/kodepos-api/issues
+2. **GitHub Issues**: Report bugs at https://github.com/mxwllalpha/kodepos-worker/issues
 3. **Email Contact**: mxwllalpha@gmail.com
 
 ### Troubleshooting

@@ -74,7 +74,7 @@ The GitHub Actions workflow handles:
 ### 🌐 Deployment URLs
 
 After deployment, your API will be available at:
-- **Production**: https://kodepos-api.tekipik.workers.dev
+- **Production**: https://kodepos-worker.tekipik.workers.dev
 - **Staging**: https://kodepos-worker-staging.tekipik.workers.dev
 - **Development**: http://localhost:8787
 
@@ -84,7 +84,7 @@ The deployment automatically configures three environments:
 
 | Environment | Worker Name | Database | URL |
 |-------------|--------------|----------|-----|
-| **Production** | `kodepos-worker` | `kodepos-db` | https://kodepos-api.tekipik.workers.dev |
+| **Production** | `kodepos-worker` | `kodepos-db` | https://kodepos-worker.tekipik.workers.dev |
 | **Staging** | `kodepos-worker-staging` | `kodepos-db-staging` | https://kodepos-worker-staging.tekipik.workers.dev |
 | **Development** | `kodepos-worker-dev` | `kodepos-db-dev` | Local development |
 
@@ -94,7 +94,7 @@ The deployment automatically configures three environments:
 
 ```javascript
 // Find postal code 12345
-const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/code/12345');
+const response = await fetch('https://kodepos-worker.tekipik.workers.dev/api/v1/code/12345');
 const data = await response.json();
 
 console.log(data);
@@ -116,7 +116,7 @@ console.log(data);
 
 ```javascript
 // Search for locations named "Jakarta"
-const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/search?q=Jakarta&limit=10');
+const response = await fetch('https://kodepos-worker.tekipik.workers.dev/api/v1/search?q=Jakarta&limit=10');
 const data = await response.json();
 ```
 
@@ -124,7 +124,7 @@ const data = await response.json();
 
 ```javascript
 // Find locations within 5km of coordinates
-const response = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5');
+const response = await fetch('https://kodepos-worker.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5');
 const data = await response.json();
 ```
 
@@ -132,10 +132,10 @@ const data = await response.json();
 
 ```javascript
 // Get all provinces
-const provinces = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/provinces');
+const provinces = await fetch('https://kodepos-worker.tekipik.workers.dev/api/v1/provinces');
 
 // Get regencies in a province
-const regencies = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/regencies/DKI%20Jakarta');
+const regencies = await fetch('https://kodepos-worker.tekipik.workers.dev/api/v1/regencies/DKI%20Jakarta');
 ```
 
 ## 🔧 API Reference
@@ -145,52 +145,52 @@ const regencies = await fetch('https://kodepos-api.tekipik.workers.dev/api/v1/re
 #### GET `/api/v1/search`
 Search postal codes by various criteria
 - **Parameters**: `search`, `kodepos`, `provinsi`, `kota`, `kecamatan`, `kelurahan`
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/search?q=Jakarta`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/search?q=Jakarta`
 
 #### GET `/api/v1/code/:kodepos`
 Get specific postal code
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/code/12345`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/code/12345`
 
 #### GET `/api/v1/detect`
 Detect location by coordinates
 - **Parameters**: `latitude`, `longitude`, `radius`
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/detect?lat=-6.2088&lng=106.8456`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/detect?lat=-6.2088&lng=106.8456`
 
 #### GET `/api/v1/nearby`
 Find postal codes within radius
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/nearby?lat=-6.2088&lng=106.8456&radius=5`
 
 #### GET `/api/v1/provinces`
 List all provinces
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/provinces`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/provinces`
 
 #### GET `/api/v1/cities/:province`
 Get cities in a province
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/cities/DKI%20Jakarta`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/cities/DKI%20Jakarta`
 
 #### GET `/api/v1/stats`
 Get database statistics
-- **Example**: `https://kodepos-api.tekipik.workers.dev/api/v1/stats`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/api/v1/stats`
 
 ### Health Check Endpoints
 
 #### GET `/health`
 Basic health check
-- **Example**: `https://kodepos-api.tekipik.workers.dev/health`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/health`
 
 #### GET `/health/detailed`
 Detailed health check with statistics
-- **Example**: `https://kodepos-api.tekipik.workers.dev/health/detailed`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/health/detailed`
 
 ### Legacy Compatibility
 
 #### GET `/search`
 Legacy endpoint for place search (compatible with original Kodepos API)
-- **Example**: `https://kodepos-api.tekipik.workers.dev/search?q=Jakarta`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/search?q=Jakarta`
 
 #### GET `/detect`
 Legacy endpoint for location detection
-- **Example**: `https://kodepos-api.tekipik.workers.dev/detect?latitude=-6.2088&longitude=106.8456`
+- **Example**: `https://kodepos-worker.tekipik.workers.dev/detect?latitude=-6.2088&longitude=106.8456`
 
 ## 📖 Documentation
 
@@ -357,7 +357,7 @@ This deployment automatically manages configuration for multiple environments:
 
 | Setting | Development | Staging | Production |
 |----------|-------------|---------|------------|
-| **API_BASE_URL** | http://localhost:8787 | https://kodepos-worker-staging.tekipik.workers.dev | https://kodepos-api.tekipik.workers.dev |
+| **API_BASE_URL** | http://localhost:8787 | https://kodepos-worker-staging.tekipik.workers.dev | https://kodepos-worker.tekipik.workers.dev |
 | **Database** | kodepos-db-dev | kodepos-db-staging | kodepos-db |
 | **Cache TTL** | 300s | 1800s | 3600s |
 | **Rate Limit** | 10/min | 50/min | 100/min |
@@ -415,4 +415,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-*Generated for PRODUCTION environment* | *Configuration: https://kodepos-api.tekipik.workers.dev* | *Worker: kodepos-worker*
+*Generated for PRODUCTION environment* | *Configuration: https://kodepos-worker.tekipik.workers.dev* | *Worker: kodepos-worker*

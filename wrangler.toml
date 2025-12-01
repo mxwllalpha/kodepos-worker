@@ -74,7 +74,7 @@ database_id = "AUTO-CREATED-BY-GITHUB-ACTIONS"
 
 [env.production.vars]
 ENVIRONMENT = "production"
-API_BASE_URL = "https://kodepos-api.tekipik.workers.dev"
+API_BASE_URL = "https://kodepos-worker.tekipik.workers.dev"
 WORKER_NAME = "kodepos-worker"
 DATABASE_NAME = "kodepos-db"
 DEBUG = "false"
